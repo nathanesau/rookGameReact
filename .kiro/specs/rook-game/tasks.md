@@ -196,7 +196,7 @@
   - Test on various viewport sizes
   - _Requirements: 9.1, 9.2_
 
-- [-] 27. Add accessibility features
+- [x] 27. Add accessibility features
   - Add ARIA labels to interactive elements
   - Ensure keyboard navigation works
   - Add focus indicators
@@ -204,7 +204,7 @@
   - Ensure sufficient color contrast
   - _Requirements: 9.1, 9.9_
 
-- [ ] 28. Polish UI and add final touches
+- [x] 28. Polish UI and add final touches
   - Refine color scheme and styling
   - Add game instructions/help section
   - Improve error messages and user feedback
