@@ -1,2 +1,0 @@
-base = {workspace = natesau_RookGame; };
-packages = { };
