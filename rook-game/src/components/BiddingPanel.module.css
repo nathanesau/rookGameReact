@@ -1,0 +1,342 @@
+.biddingPanel {
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  min-width: 300px;
+  animation: panelSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes panelSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.header {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.header h3 {
+  margin: 0 0 10px 0;
+  color: #2c3e50;
+  font-size: 1.5rem;
+}
+
+.currentBid {
+  color: #7f8c8d;
+  font-size: 1rem;
+}
+
+.currentBid strong {
+  color: #2c3e50;
+  font-size: 1.2rem;
+}
+
+.controls {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.bidSelector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 15px;
+}
+
+.adjustButton {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid #3498db;
+  background: white;
+  color: #3498db;
+  font-size: 24px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.adjustButton:hover:not(:disabled) {
+  background: #3498db;
+  color: white;
+  transform: scale(1.1);
+}
+
+.adjustButton:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.bidDisplay {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 15px 30px;
+  background: #ecf0f1;
+  border-radius: 8px;
+  min-width: 120px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.bidAmount {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #2c3e50;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bidDisplay:has(.bidAmount) {
+  animation: bidPulse 0.3s ease-out;
+}
+
+@keyframes bidPulse {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+    background: #d5dbdb;
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.bidLabel {
+  font-size: 0.9rem;
+  color: #7f8c8d;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.bidInfo {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 10px;
+  font-size: 0.9rem;
+  color: #7f8c8d;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+}
+
+.button {
+  flex: 1;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.bidButton {
+  background: #27ae60;
+  color: white;
+}
+
+.bidButton:hover:not(:disabled) {
+  background: #229954;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(39, 174, 96, 0.3);
+}
+
+.passButton {
+  background: #e74c3c;
+  color: white;
+}
+
+.passButton:hover:not(:disabled) {
+  background: #c0392b;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
+}
+
+.waitingMessage {
+  text-align: center;
+  padding: 10px;
+  background: #fff3cd;
+  border-radius: 6px;
+  color: #856404;
+  font-size: 0.9rem;
+}
+
+.passedMessage {
+  text-align: center;
+  padding: 20px;
+  background: #d1ecf1;
+  border-radius: 8px;
+  color: #0c5460;
+  font-size: 1rem;
+}
+
+.redealSection {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 15px;
+  background: #fff3cd;
+  border-radius: 8px;
+  border: 2px dashed #ffc107;
+}
+
+.redealButton {
+  background: #ff9800;
+  color: white;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.redealButton:hover {
+  background: #f57c00;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(255, 152, 0, 0.3);
+}
+
+.redealHint {
+  font-size: 0.85rem;
+  color: #856404;
+  font-style: italic;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .biddingPanel {
+    min-width: 280px;
+    padding: 18px;
+  }
+
+  .header h3 {
+    font-size: 1.3rem;
+  }
+
+  .currentBid {
+    font-size: 0.9rem;
+  }
+
+  .currentBid strong {
+    font-size: 1.1rem;
+  }
+
+  .bidAmount {
+    font-size: 1.8rem;
+  }
+
+  .adjustButton {
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+  }
+
+  .button {
+    padding: 10px 16px;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .biddingPanel {
+    min-width: 260px;
+    padding: 16px;
+  }
+
+  .header h3 {
+    font-size: 1.2rem;
+  }
+
+  .currentBid {
+    font-size: 0.85rem;
+  }
+
+  .currentBid strong {
+    font-size: 1rem;
+  }
+
+  .bidAmount {
+    font-size: 1.6rem;
+  }
+
+  .bidLabel {
+    font-size: 0.8rem;
+  }
+
+  .adjustButton {
+    width: 32px;
+    height: 32px;
+    font-size: 18px;
+  }
+
+  .bidDisplay {
+    padding: 12px 24px;
+    min-width: 100px;
+  }
+
+  .button {
+    padding: 10px 14px;
+    font-size: 0.9rem;
+  }
+
+  .bidInfo {
+    font-size: 0.8rem;
+  }
+
+  .redealButton {
+    padding: 10px 20px;
+    font-size: 0.95rem;
+  }
+
+  .redealHint {
+    font-size: 0.8rem;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .adjustButton {
+    /* Larger touch targets */
+    min-width: 44px;
+    min-height: 44px;
+  }
+
+  .button {
+    /* Larger touch targets */
+    min-height: 44px;
+    padding: 12px 20px;
+  }
+
+  .adjustButton:active:not(:disabled) {
+    /* Tap feedback */
+    transform: scale(0.95);
+  }
+
+  .button:active:not(:disabled) {
+    /* Tap feedback */
+    transform: translateY(0) scale(0.98);
+  }
+}

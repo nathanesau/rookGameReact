@@ -1,0 +1,282 @@
+.card {
+  width: 80px;
+  height: 120px;
+  border-radius: 8px;
+  border: 2px solid #333;
+  background: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  user-select: none;
+  /* Touch-friendly minimum size */
+  min-width: 60px;
+  min-height: 90px;
+}
+
+.card:hover:not(.disabled) {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.card:focus {
+  outline: 2px solid #4a90e2;
+  outline-offset: 2px;
+}
+
+/* Color-specific styling */
+.card-red {
+  border-color: #e74c3c;
+}
+
+.card-red .cardValue,
+.card-red .cardColor {
+  color: #e74c3c;
+}
+
+.card-yellow {
+  border-color: #f39c12;
+}
+
+.card-yellow .cardValue,
+.card-yellow .cardColor {
+  color: #f39c12;
+}
+
+.card-green {
+  border-color: #27ae60;
+}
+
+.card-green .cardValue,
+.card-green .cardColor {
+  color: #27ae60;
+}
+
+.card-black {
+  border-color: #2c3e50;
+}
+
+.card-black .cardValue,
+.card-black .cardColor {
+  color: #2c3e50;
+}
+
+/* Rook Bird special styling */
+.rookBird {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: #5a67d8;
+  color: white;
+}
+
+.rookSymbol {
+  font-size: 36px;
+  margin-bottom: 4px;
+}
+
+.rookText {
+  font-size: 14px;
+  font-weight: bold;
+  letter-spacing: 1px;
+}
+
+/* Card content */
+.cardContent {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.cardValue {
+  font-size: 32px;
+  font-weight: bold;
+  line-height: 1;
+}
+
+.cardColor {
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+/* Points badge */
+.pointsBadge {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #f39c12;
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 10px;
+  min-width: 20px;
+  text-align: center;
+}
+
+.rookBird .pointsBadge {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+/* Selected state */
+.selected {
+  transform: translateY(-12px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(74, 144, 226, 0.5);
+  border-color: #4a90e2;
+  border-width: 3px;
+  animation: selectedPulse 1.5s ease-in-out infinite;
+}
+
+.selected::after {
+  content: '';
+  position: absolute;
+  inset: -4px;
+  border: 2px solid #4a90e2;
+  border-radius: 10px;
+  pointer-events: none;
+  animation: glowPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes selectedPulse {
+  0%, 100% {
+    box-shadow: 0 8px 20px rgba(74, 144, 226, 0.5);
+  }
+  50% {
+    box-shadow: 0 8px 24px rgba(74, 144, 226, 0.7);
+  }
+}
+
+@keyframes glowPulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Disabled state */
+.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  filter: grayscale(50%);
+}
+
+.disabled:hover {
+  transform: none;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Responsive card sizing */
+@media (max-width: 1024px) {
+  .card {
+    width: 70px;
+    height: 105px;
+  }
+
+  .cardValue {
+    font-size: 28px;
+  }
+
+  .rookSymbol {
+    font-size: 32px;
+  }
+
+  .rookText {
+    font-size: 12px;
+  }
+}
+
+@media (max-width: 768px) {
+  .card {
+    width: 60px;
+    height: 90px;
+  }
+
+  .cardValue {
+    font-size: 24px;
+  }
+
+  .cardColor {
+    font-size: 10px;
+  }
+
+  .rookSymbol {
+    font-size: 28px;
+  }
+
+  .rookText {
+    font-size: 11px;
+  }
+
+  .pointsBadge {
+    font-size: 9px;
+    padding: 2px 5px;
+    top: 3px;
+    right: 3px;
+  }
+
+  /* Reduce hover effect on smaller screens */
+  .card:hover:not(.disabled) {
+    transform: translateY(-6px) scale(1.02);
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    width: 50px;
+    height: 75px;
+  }
+
+  .cardValue {
+    font-size: 20px;
+  }
+
+  .cardColor {
+    font-size: 9px;
+  }
+
+  .rookSymbol {
+    font-size: 24px;
+  }
+
+  .rookText {
+    font-size: 10px;
+  }
+
+  .pointsBadge {
+    font-size: 8px;
+    padding: 1px 4px;
+  }
+
+  /* Minimal hover effect on mobile */
+  .card:hover:not(.disabled) {
+    transform: translateY(-4px);
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .card {
+    /* Larger touch targets for mobile */
+    min-width: 55px;
+    min-height: 82px;
+  }
+
+  .card:hover:not(.disabled) {
+    /* Remove hover effects on touch devices */
+    transform: none;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .card:active:not(.disabled) {
+    /* Add tap feedback */
+    transform: scale(0.95);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  }
+}

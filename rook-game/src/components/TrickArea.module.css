@@ -1,0 +1,168 @@
+.trickArea {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px;
+  height: 400px;
+  pointer-events: none;
+}
+
+.playedCard {
+  position: absolute;
+  animation: cardPlay 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transition: all 0.3s ease-in-out;
+}
+
+/* Player positions around the trick area */
+.bottomPosition {
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.topPosition {
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+.leftPosition {
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.rightPosition {
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Winning card highlight */
+.winningCard {
+  animation: winningPulse 0.5s ease-in-out;
+  filter: drop-shadow(0 0 10px gold);
+  transform: scale(1.1);
+}
+
+.playerLabel {
+  position: absolute;
+  bottom: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 12px;
+  font-weight: 600;
+  color: #333;
+  background: rgba(255, 255, 255, 0.9);
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Animations */
+@keyframes cardPlay {
+  0% {
+    opacity: 0;
+    transform: scale(0.3) translateY(-100px) rotate(180deg);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.1) translateY(0) rotate(-5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotate(0deg);
+  }
+}
+
+@keyframes winningPulse {
+  0%, 100% {
+    transform: scale(1.1);
+    filter: drop-shadow(0 0 10px gold);
+  }
+  50% {
+    transform: scale(1.2);
+    filter: drop-shadow(0 0 20px gold) brightness(1.2);
+  }
+}
+
+/* Trick collection animation */
+.trickArea.collecting .playedCard {
+  animation: collectTrick 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+@keyframes collectTrick {
+  0% {
+    opacity: 1;
+    transform: scale(1) translateY(0) rotate(0deg);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(0.8) translateY(-30px) rotate(10deg);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.2) translateY(-100px) rotate(45deg);
+  }
+}
+
+/* Responsive adjustments */
+@media (max-width: 1024px) {
+  .trickArea {
+    width: 350px;
+    height: 350px;
+  }
+
+  .playerLabel {
+    font-size: 11px;
+    bottom: -22px;
+  }
+}
+
+@media (max-width: 768px) {
+  .trickArea {
+    width: 280px;
+    height: 280px;
+  }
+
+  .playerLabel {
+    font-size: 10px;
+    bottom: -20px;
+    padding: 2px 6px;
+  }
+
+  .winningCard {
+    transform: scale(1.08);
+  }
+}
+
+@media (max-width: 480px) {
+  .trickArea {
+    width: 220px;
+    height: 220px;
+  }
+
+  .playerLabel {
+    font-size: 9px;
+    bottom: -18px;
+    padding: 1px 5px;
+  }
+
+  .winningCard {
+    transform: scale(1.05);
+    filter: drop-shadow(0 0 8px gold);
+  }
+
+  @keyframes winningPulse {
+    0%, 100% {
+      transform: scale(1.05);
+      filter: drop-shadow(0 0 8px gold);
+    }
+    50% {
+      transform: scale(1.1);
+      filter: drop-shadow(0 0 15px gold) brightness(1.2);
+    }
+  }
+}

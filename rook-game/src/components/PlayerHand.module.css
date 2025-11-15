@@ -1,0 +1,166 @@
+.playerHand {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding: 20px;
+  min-height: 200px;
+}
+
+.cardFan {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 180px;
+  width: 100%;
+  max-width: 900px;
+}
+
+.cardWrapper {
+  position: absolute;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  
+  /* Calculate position and rotation for fan effect */
+  --angle-range: 40deg;
+  --card-offset: calc((var(--card-index) - (var(--total-cards) - 1) / 2) / var(--total-cards));
+  --rotation: calc(var(--card-offset) * var(--angle-range));
+  --horizontal-offset: calc(var(--card-index) * 45px - (var(--total-cards) - 1) * 22.5px);
+  
+  left: calc(50% + var(--horizontal-offset));
+  transform: translateX(-50%) rotate(var(--rotation));
+  transform-origin: center bottom;
+  
+  /* Initial card dealing animation */
+  animation: dealCard 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation-delay: calc(var(--card-index) * 0.05s);
+  animation-fill-mode: backwards;
+}
+
+@keyframes dealCard {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-100vh) rotate(calc(var(--rotation) + 180deg)) scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) rotate(var(--rotation)) scale(1);
+  }
+}
+
+.cardWrapper:hover {
+  transform: translateX(-50%) rotate(var(--rotation)) translateY(-20px);
+  z-index: 10;
+}
+
+/* Playable cards have a subtle glow effect */
+.cardWrapper.playable {
+  cursor: pointer;
+}
+
+.cardWrapper.playable::before {
+  content: '';
+  position: absolute;
+  top: -4px;
+  left: -4px;
+  right: -4px;
+  bottom: -4px;
+  background: linear-gradient(135deg, #4ade80, #22c55e);
+  border-radius: 12px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  z-index: -1;
+  filter: blur(8px);
+}
+
+.cardWrapper.playable:hover::before {
+  opacity: 0.6;
+}
+
+/* Non-playable cards are slightly dimmed */
+.cardWrapper:not(.playable) {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.cardWrapper:not(.playable):hover {
+  transform: translateX(-50%) rotate(var(--rotation));
+}
+
+/* Responsive adjustments for smaller screens */
+@media (max-width: 1024px) {
+  .playerHand {
+    padding: 15px;
+    min-height: 170px;
+  }
+
+  .cardFan {
+    height: 160px;
+    max-width: 800px;
+  }
+
+  .cardWrapper {
+    --angle-range: 45deg;
+    --horizontal-offset: calc(var(--card-index) * 40px - (var(--total-cards) - 1) * 20px);
+  }
+}
+
+@media (max-width: 768px) {
+  .playerHand {
+    padding: 10px;
+    min-height: 140px;
+  }
+
+  .cardFan {
+    max-width: 100%;
+    height: 130px;
+  }
+  
+  .cardWrapper {
+    --angle-range: 50deg;
+    --horizontal-offset: calc(var(--card-index) * 32px - (var(--total-cards) - 1) * 16px);
+  }
+  
+  .cardWrapper:hover {
+    transform: translateX(-50%) rotate(var(--rotation)) translateY(-12px);
+  }
+}
+
+@media (max-width: 480px) {
+  .playerHand {
+    padding: 8px;
+    min-height: 110px;
+  }
+
+  .cardFan {
+    height: 100px;
+  }
+  
+  .cardWrapper {
+    --angle-range: 60deg;
+    --horizontal-offset: calc(var(--card-index) * 26px - (var(--total-cards) - 1) * 13px);
+  }
+  
+  .cardWrapper:hover {
+    transform: translateX(-50%) rotate(var(--rotation)) translateY(-8px);
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .cardWrapper:hover {
+    /* Remove hover lift on touch devices */
+    transform: translateX(-50%) rotate(var(--rotation));
+  }
+
+  .cardWrapper.playable:active {
+    /* Add tap feedback for playable cards */
+    transform: translateX(-50%) rotate(var(--rotation)) translateY(-10px) scale(1.05);
+    z-index: 20;
+  }
+
+  .cardWrapper.playable::before {
+    /* Always show glow on playable cards for touch devices */
+    opacity: 0.4;
+  }
+}

@@ -1,0 +1,283 @@
+.gameEnd {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 2rem;
+}
+
+.container {
+  background: white;
+  border-radius: 20px;
+  padding: 3rem;
+  max-width: 600px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Victory Section */
+.victorySection {
+  text-align: center;
+  margin-bottom: 2.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 2px solid #e0e0e0;
+}
+
+.victoryTitle {
+  margin: 0 0 1rem 0;
+  font-size: 2.5rem;
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+.trophy {
+  font-size: 5rem;
+  margin: 1rem 0;
+  animation: bounce 1s ease-in-out infinite;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-15px);
+  }
+}
+
+.winnerName {
+  margin: 1rem 0 0.5rem 0;
+  font-size: 2rem;
+  color: #27ae60;
+  font-weight: 700;
+}
+
+.winnerSubtext {
+  margin: 0;
+  font-size: 1.25rem;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+/* Scores Section */
+.scoresSection {
+  margin-bottom: 2rem;
+}
+
+.sectionTitle {
+  margin: 0 0 1.5rem 0;
+  font-size: 1.5rem;
+  color: #2c3e50;
+  font-weight: 600;
+  text-align: center;
+}
+
+.scoreCards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.scoreCard {
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  border-radius: 12px;
+  padding: 1.5rem;
+  text-align: center;
+  transition: all 0.3s ease;
+  border: 3px solid transparent;
+}
+
+.scoreCard.winner {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+  border-color: #f1c40f;
+  box-shadow: 0 0 20px rgba(241, 196, 15, 0.5);
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(241, 196, 15, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 30px rgba(241, 196, 15, 0.8);
+  }
+}
+
+.scoreCard .teamName {
+  font-size: 1rem;
+  color: #34495e;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.scoreCard.winner .teamName {
+  color: white;
+}
+
+.finalScore {
+  font-size: 3rem;
+  font-weight: 700;
+  color: #2c3e50;
+  line-height: 1;
+}
+
+.scoreCard.winner .finalScore {
+  color: white;
+}
+
+.scoreCard .winnerBadge {
+  margin-top: 0.75rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #f1c40f;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Statistics Section */
+.statsSection {
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+}
+
+.stats {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.statItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.statLabel {
+  font-size: 1rem;
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+.statValue {
+  font-size: 1.25rem;
+  color: #2c3e50;
+  font-weight: 700;
+}
+
+/* Actions */
+.actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.newGameButton {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  padding: 1rem 3rem;
+  font-size: 1.25rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+}
+
+.newGameButton:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+}
+
+.newGameButton:active {
+  transform: translateY(0);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .container {
+    padding: 2rem;
+  }
+
+  .victoryTitle {
+    font-size: 2rem;
+  }
+
+  .trophy {
+    font-size: 4rem;
+  }
+
+  .winnerName {
+    font-size: 1.5rem;
+  }
+
+  .winnerSubtext {
+    font-size: 1rem;
+  }
+
+  .scoreCards {
+    grid-template-columns: 1fr;
+  }
+
+  .finalScore {
+    font-size: 2.5rem;
+  }
+
+  .newGameButton {
+    padding: 0.875rem 2rem;
+    font-size: 1.1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .gameEnd {
+    padding: 1rem;
+  }
+
+  .container {
+    padding: 1.5rem;
+  }
+
+  .victoryTitle {
+    font-size: 1.75rem;
+  }
+
+  .trophy {
+    font-size: 3rem;
+  }
+
+  .sectionTitle {
+    font-size: 1.25rem;
+  }
+
+  .statItem {
+    padding: 0.5rem;
+  }
+
+  .statLabel {
+    font-size: 0.9rem;
+  }
+
+  .statValue {
+    font-size: 1.1rem;
+  }
+}
