@@ -10,9 +10,16 @@ interface CardProps {
 
 export const Card = ({ card, onClick, isSelected = false, isDisabled = false }: CardProps) => {
   const isRookBird = card.color === 'rook';
-  
+
   const handleClick = () => {
     if (!isDisabled && onClick) {
+      onClick();
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (!isDisabled && onClick && (e.key === 'Enter' || e.key === ' ')) {
+      e.preventDefault();
       onClick();
     }
   };
@@ -25,14 +32,24 @@ export const Card = ({ card, onClick, isSelected = false, isDisabled = false }: 
     isRookBird && styles.rookBird
   ].filter(Boolean).join(' ');
 
+  const getAriaLabel = () => {
+    if (isRookBird) {
+      return `Rook Bird card, worth ${card.points} points`;
+    }
+    const pointsText = card.points > 0 ? `, worth ${card.points} points` : '';
+    return `${card.color} ${card.value}${pointsText}`;
+  };
+
   return (
-    <div 
+    <div
       className={cardClasses}
       onClick={handleClick}
+      onKeyDown={handleKeyDown}
       role="button"
       tabIndex={isDisabled ? -1 : 0}
-      aria-label={isRookBird ? 'Rook Bird card' : `${card.color} ${card.value}`}
+      aria-label={getAriaLabel()}
       aria-disabled={isDisabled}
+      aria-pressed={isSelected}
     >
       <div className={styles.cardContent}>
         {isRookBird ? (

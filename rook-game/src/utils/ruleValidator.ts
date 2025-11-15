@@ -238,14 +238,13 @@ export class RuleValidator {
       
       // If player only has Rook Bird as trump (no regular trump cards)
       if (trumpCards.length === 0 && hasRookBird) {
-        // Must play Rook Bird
-        if (playedCard.color !== 'rook') {
-          return true; // Renege: had Rook Bird but didn't play it
-        }
-        return false;
+        // Must play Rook Bird - but we already returned early if it was rook
+        // So if we're here, they didn't play the Rook Bird
+        return true; // Renege: had Rook Bird but didn't play it
       }
       
       // If player has trump cards, they must play trump
+      // At this point, playedCard.color is CardColor (not 'rook' due to early return)
       if (trumpCards.length > 0 && playedCard.color !== trumpColor) {
         return true; // Renege: had trump but didn't play it
       }

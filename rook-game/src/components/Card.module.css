@@ -24,8 +24,15 @@
 }
 
 .card:focus {
-  outline: 2px solid #4a90e2;
-  outline-offset: 2px;
+  outline: 3px solid #4a90e2;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+}
+
+.card:focus-visible {
+  outline: 3px solid #4a90e2;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
 }
 
 /* Color-specific styling */

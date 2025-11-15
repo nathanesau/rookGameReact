@@ -85,6 +85,12 @@
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 
+.colorButton:focus-visible {
+  outline: 3px solid #ffd700;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.4);
+}
+
 .colorButton.selected {
   border-color: #ffd700;
   background: rgba(255, 215, 0, 0.2);
@@ -170,6 +176,12 @@
 
 .confirmButton:active:not(:disabled) {
   transform: translateY(0);
+}
+
+.confirmButton:focus-visible {
+  outline: 3px solid #ffd700;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.4);
 }
 
 /* Responsive adjustments */

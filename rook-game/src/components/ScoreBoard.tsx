@@ -41,54 +41,54 @@ export const ScoreBoard = () => {
     : 'Team 2';
 
   return (
-    <div className={styles.scoreBoard}>
+    <div className={styles.scoreBoard} role="region" aria-label="Score board">
       <h2 className={styles.title}>Score</h2>
 
       <div className={styles.teams}>
         {/* Team 1 */}
-        <div className={`${styles.team} ${team1Won ? styles.winner : ''}`}>
+        <div className={`${styles.team} ${team1Won ? styles.winner : ''}`} role="article" aria-label={`Team 1: ${team1Name}, total score ${team1Score} points`}>
           <div className={styles.teamHeader}>
             <h3 className={styles.teamName}>{team1Name}</h3>
             {biddingTeam === 'team1' && bidAmount && (
-              <span className={styles.bidBadge}>Bid: {bidAmount}</span>
+              <span className={styles.bidBadge} aria-label={`Bidding team with bid of ${bidAmount} points`}>Bid: {bidAmount}</span>
             )}
           </div>
           <div className={styles.scores}>
             <div className={styles.totalScore}>
               <span className={styles.scoreLabel}>Total:</span>
-              <span className={styles.scoreValue}>{team1Score}</span>
+              <span className={styles.scoreValue} aria-label={`${team1Score} points`}>{team1Score}</span>
             </div>
             {(phase === 'playing' || phase === 'roundEnd') && team1RoundScore > 0 && (
               <div className={styles.roundScore}>
                 <span className={styles.scoreLabel}>Round:</span>
-                <span className={styles.scoreValue}>{team1RoundScore}</span>
+                <span className={styles.scoreValue} aria-label={`${team1RoundScore} points this round`}>{team1RoundScore}</span>
               </div>
             )}
           </div>
-          {team1Won && <div className={styles.winnerBadge}>Winner!</div>}
+          {team1Won && <div className={styles.winnerBadge} role="status">Winner!</div>}
         </div>
 
         {/* Team 2 */}
-        <div className={`${styles.team} ${team2Won ? styles.winner : ''}`}>
+        <div className={`${styles.team} ${team2Won ? styles.winner : ''}`} role="article" aria-label={`Team 2: ${team2Name}, total score ${team2Score} points`}>
           <div className={styles.teamHeader}>
             <h3 className={styles.teamName}>{team2Name}</h3>
             {biddingTeam === 'team2' && bidAmount && (
-              <span className={styles.bidBadge}>Bid: {bidAmount}</span>
+              <span className={styles.bidBadge} aria-label={`Bidding team with bid of ${bidAmount} points`}>Bid: {bidAmount}</span>
             )}
           </div>
           <div className={styles.scores}>
             <div className={styles.totalScore}>
               <span className={styles.scoreLabel}>Total:</span>
-              <span className={styles.scoreValue}>{team2Score}</span>
+              <span className={styles.scoreValue} aria-label={`${team2Score} points`}>{team2Score}</span>
             </div>
             {(phase === 'playing' || phase === 'roundEnd') && team2RoundScore > 0 && (
               <div className={styles.roundScore}>
                 <span className={styles.scoreLabel}>Round:</span>
-                <span className={styles.scoreValue}>{team2RoundScore}</span>
+                <span className={styles.scoreValue} aria-label={`${team2RoundScore} points this round`}>{team2RoundScore}</span>
               </div>
             )}
           </div>
-          {team2Won && <div className={styles.winnerBadge}>Winner!</div>}
+          {team2Won && <div className={styles.winnerBadge} role="status">Winner!</div>}
         </div>
       </div>
     </div>

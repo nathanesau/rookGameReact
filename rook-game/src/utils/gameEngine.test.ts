@@ -59,6 +59,7 @@ describe('gameEngine', () => {
         ['team1', 0],
         ['team2', 0],
       ]),
+      renegeInfo: null,
     });
 
     it('should deal 13 cards to each player', () => {
@@ -214,6 +215,7 @@ describe('gameEngine', () => {
         ['team1', 0],
         ['team2', 0],
       ]),
+      renegeInfo: null,
     });
 
     describe('when player is leading', () => {

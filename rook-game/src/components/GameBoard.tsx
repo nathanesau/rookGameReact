@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useGame } from '../contexts';
 import { GameTable } from './GameTable';
 import { BiddingPanel } from './BiddingPanel';
@@ -6,6 +6,7 @@ import { NestDisplay } from './NestDisplay';
 import { TrumpSelector } from './TrumpSelector';
 import { GameInfo } from './GameInfo';
 import { getPlayableCards } from '../utils/gameEngine';
+import { aiMakeBid, aiSelectNestCards, aiSelectTrump, aiPlayCard } from '../utils/aiPlayer';
 import type { Card, CardColor } from '../types';
 import styles from './GameBoard.module.css';
 
@@ -24,6 +25,71 @@ export const GameBoard = () => {
     }
     return getPlayableCards(state, humanPlayerId);
   }, [state, humanPlayer, humanPlayerId]);
+
+  // AI player logic - runs when it's a computer player's turn
+  useEffect(() => {
+    const currentPlayer = state.currentPlayerId;
+    
+    // Only run AI for non-human players
+    if (currentPlayer === humanPlayerId) return;
+
+    const delay = 800; // Delay for more natural feel
+
+    const timer = setTimeout(() => {
+      // Bidding phase AI
+      if (state.phase === 'bidding' && !state.passedPlayers.has(currentPlayer)) {
+        const decision = aiMakeBid(state, currentPlayer);
+        if (decision.action === 'bid' && decision.amount) {
+          dispatch({
+            type: 'PLACE_BID',
+            payload: { playerId: currentPlayer, amount: decision.amount },
+          });
+        } else {
+          dispatch({
+            type: 'PASS_BID',
+            payload: { playerId: currentPlayer },
+          });
+        }
+      }
+      
+      // Nest selection AI
+      else if (state.phase === 'nestSelection' && state.highBidder === currentPlayer) {
+        const player = state.players.find(p => p.id === currentPlayer);
+        if (player) {
+          const cardsToDiscard = aiSelectNestCards(player.hand);
+          dispatch({
+            type: 'SELECT_NEST_CARDS',
+            payload: { cards: cardsToDiscard },
+          });
+        }
+      }
+      
+      // Trump selection AI
+      else if (state.phase === 'trumpSelection' && state.highBidder === currentPlayer) {
+        const player = state.players.find(p => p.id === currentPlayer);
+        if (player) {
+          const trumpColor = aiSelectTrump(player.hand);
+          dispatch({
+            type: 'SELECT_TRUMP',
+            payload: { color: trumpColor },
+          });
+        }
+      }
+      
+      // Playing phase AI
+      else if (state.phase === 'playing') {
+        const cardToPlay = aiPlayCard(state, currentPlayer);
+        if (cardToPlay) {
+          dispatch({
+            type: 'PLAY_CARD',
+            payload: { playerId: currentPlayer, card: cardToPlay },
+          });
+        }
+      }
+    }, delay);
+
+    return () => clearTimeout(timer);
+  }, [state, humanPlayerId, dispatch]);
 
   // Handle card click during playing phase
   const handleCardClick = (card: Card) => {

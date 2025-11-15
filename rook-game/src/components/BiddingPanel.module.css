@@ -79,6 +79,12 @@
   cursor: not-allowed;
 }
 
+.adjustButton:focus-visible {
+  outline: 3px solid #3498db;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.3);
+}
+
 .bidDisplay {
   display: flex;
   flex-direction: column;
@@ -148,6 +154,12 @@
 .button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+.button:focus-visible {
+  outline: 3px solid currentColor;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.2);
 }
 
 .bidButton {

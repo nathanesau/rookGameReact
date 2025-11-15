@@ -88,6 +88,14 @@
 .input:focus {
   outline: none;
   border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
+}
+
+.input:focus-visible {
+  outline: 3px solid #667eea;
+  outline-offset: 2px;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2);
 }
 
 .input::placeholder {
@@ -124,6 +132,12 @@
 
 .startButton:active {
   transform: translateY(0);
+}
+
+.startButton:focus-visible {
+  outline: 3px solid #ffd700;
+  outline-offset: 2px;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.3);
 }
 
 .info {
