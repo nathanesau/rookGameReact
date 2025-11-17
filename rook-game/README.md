@@ -6,13 +6,13 @@ A modern, fully-featured digital implementation of the classic Rook card game bu
 
 ### Core Gameplay
 - **4-Player Team-Based Gameplay** - Partners sit opposite each other
-- **Complete Bidding System** - Bid for the right to name trump (70-120 points)
+- **Complete Bidding System** - Bid for the right to name trump (40-120 points)
 - **Trump Selection & Nest Management** - High bidder takes nest and discards 5 cards
 - **Interactive Card Play** - Click to play cards with visual feedback
-- **Rook Bird Special Rules** - Highest trump card with unique gameplay mechanics
+- **Rook Bird Special Rules** - Lowest trump card with unique gameplay mechanics
 - **Renege Detection** - Automatic detection and penalty system
 - **Score Tracking** - Real-time scoring across multiple rounds
-- **Win Condition** - First team to 300 points wins
+- **Win Condition** - First team to 500 points wins
 
 ### User Experience
 - **🎮 Intuitive Interface** - Clean, modern design with smooth animations
@@ -66,29 +66,29 @@ npm test
 
 ### Game Flow
 1. **Dealing** - Each player receives 13 cards, 5 cards go to the nest
-2. **Bidding** - Players bid in increments of 5 (minimum 70, maximum 120)
+2. **Bidding** - Players bid in increments of 5 (minimum 40, maximum 120)
 3. **Trump Selection** - High bidder takes nest, discards 5 cards, and names trump
-4. **Playing Tricks** - Players play 13 tricks following suit rules
+4. **Playing Phase** - Players play 13 tricks following suit rules
 5. **Scoring** - Teams count points, check if bidding team made their bid
-6. **Next Round** - Continue until a team reaches 300 points
+6. **Next Round** - Continue until a team reaches 500 points
 
 ### Card Values
 - **5s**: 5 points each
 - **10s and 14s**: 10 points each
-- **Rook Bird**: 20 points (highest trump)
+- **Rook Bird**: 20 points (lowest trump)
 - **All other cards**: 0 points
 - **Total available**: 180 points per round
 
 ### Special Rules
 - **Following Suit**: Must play the same color as led card if you have it
 - **Trump Power**: Trump cards beat all non-trump cards
-- **Rook Bird**: Can be played anytime, acts as highest trump
+- **Rook Bird**: Can be played anytime, acts as lowest trump
 - **Last Trick Bonus**: Winner of last trick also wins the 5-card nest
 - **Redeal**: If you have no point cards, you can call for a redeal during bidding
 
 ### Winning
-- First team to reach **300 points** wins
-- If both teams reach 300 in the same round, highest score wins
+- First team to reach **500 points** wins
+- If both teams reach 500 in the same round, highest score wins
 
 ## 🎨 Design System
 

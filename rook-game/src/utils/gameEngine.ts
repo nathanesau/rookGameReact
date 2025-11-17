@@ -97,15 +97,16 @@ function cardBeatsCard(
   leadCard: Card,
   trumpColor: CardColor | null
 ): boolean {
-  // Rook Bird is the highest trump card (Requirement 6.2)
+  // Rook Bird is the LOWEST trump card (Requirement 6.2)
   if (card.color === 'rook') {
-    // Rook Bird beats everything except another Rook Bird (impossible)
-    return currentWinner.color !== 'rook';
+    // Rook only beats non-trump cards
+    const winnerIsTrump = trumpColor !== null && currentWinner.color === trumpColor;
+    return !winnerIsTrump && currentWinner.color !== 'rook';
   }
 
-  // If current winner is Rook Bird, nothing else can beat it
+  // If current winner is Rook Bird, any trump card beats it
   if (currentWinner.color === 'rook') {
-    return false;
+    return trumpColor !== null && card.color === trumpColor;
   }
 
   // Check if either card is trump
@@ -155,11 +156,11 @@ function cardBeatsCard(
  * Helper function to get numeric value of a card for comparison
  * 
  * @param card - The card to get value for
- * @returns Numeric value (1-14)
+ * @returns Numeric value (0-14, Rook is 0 - lowest trump)
  */
 function getCardNumericValue(card: Card): number {
   if (card.value === 'rook') {
-    return 15; // Rook Bird is highest
+    return 0; // Rook Bird is lowest trump
   }
   return card.value;
 }
@@ -232,7 +233,7 @@ export function dealCards(state: GameState): GameState {
     ...state,
     players: updatedPlayers,
     nest,
-    phase: 'bidding',
+    phase: 'roundStart',
     deck: [], // Deck is now empty after dealing
   };
 }

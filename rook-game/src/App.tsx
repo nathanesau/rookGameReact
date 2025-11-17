@@ -1,12 +1,10 @@
 import { useEffect, useState } from 'react';
-import { GameBoard, GameSetup, GameEnd, HelpModal, ToastContainer, LoadingSpinner } from './components';
+import { GameBoard, GameSetup, GameEnd, HelpModal, LoadingSpinner } from './components';
 import { useGame } from './contexts';
-import { useToast } from './hooks/useToast';
 import './App.css';
 
 function App() {
   const { state, dispatch } = useGame();
-  const { toasts, removeToast, success, info } = useToast();
   const [showHelp, setShowHelp] = useState(false);
   const [isDealing, setIsDealing] = useState(false);
 
@@ -15,14 +13,12 @@ function App() {
       type: 'INITIALIZE_GAME',
       payload: { playerNames },
     });
-    success('Game started! Good luck!');
   };
 
   // Auto-deal cards after initialization
   useEffect(() => {
     if (state.phase === 'dealing' && state.players.length > 0 && state.players[0].hand.length === 0) {
       setIsDealing(true);
-      info('Dealing cards...');
       
       // Small delay to show dealing phase
       const timer = setTimeout(() => {
@@ -31,7 +27,7 @@ function App() {
       }, 800);
       return () => clearTimeout(timer);
     }
-  }, [state.phase, state.players, dispatch, info]);
+  }, [state.phase, state.players, dispatch]);
 
   // Show setup screen if in setup phase
   if (state.phase === 'setup') {
@@ -43,10 +39,23 @@ function App() {
           onClick={() => setShowHelp(true)}
           aria-label="Show game instructions"
         >
-          ?
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
         </button>
         <HelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
-        <ToastContainer toasts={toasts} onRemove={removeToast} />
       </>
     );
   }
@@ -61,10 +70,23 @@ function App() {
           onClick={() => setShowHelp(true)}
           aria-label="Show game instructions"
         >
-          ?
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3" />
+            <line x1="12" y1="17" x2="12.01" y2="17" />
+          </svg>
         </button>
         <HelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
-        <ToastContainer toasts={toasts} onRemove={removeToast} />
       </>
     );
   }
@@ -74,23 +96,14 @@ function App() {
     return (
       <div className="loading-container">
         <LoadingSpinner size="large" message="Dealing cards..." />
-        <ToastContainer toasts={toasts} onRemove={removeToast} />
       </div>
     );
   }
 
+  // During gameplay, HelpButton component in GameTable handles the help button
   return (
     <>
       <GameBoard />
-      <button
-        className="help-button"
-        onClick={() => setShowHelp(true)}
-        aria-label="Show game instructions"
-      >
-        ?
-      </button>
-      <HelpModal isOpen={showHelp} onClose={() => setShowHelp(false)} />
-      <ToastContainer toasts={toasts} onRemove={removeToast} />
     </>
   );
 }

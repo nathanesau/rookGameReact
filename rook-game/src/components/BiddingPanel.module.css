@@ -1,10 +1,22 @@
 .biddingPanel {
-  background: rgba(255, 255, 255, 0.95);
-  border-radius: 12px;
-  padding: 20px;
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(8px);
+  border-radius: 10px;
+  padding: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  min-width: 300px;
+  width: 90vw;
+  max-width: 380px;
+  height: 320px;
+  display: flex;
+  flex-direction: column;
   animation: panelSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
 }
 
 @keyframes panelSlideIn {
@@ -12,6 +24,7 @@
     opacity: 0;
     transform: translateY(30px) scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -20,46 +33,114 @@
 
 .header {
   text-align: center;
-  margin-bottom: 20px;
+  margin-bottom: 14px;
 }
 
 .header h3 {
-  margin: 0 0 10px 0;
+  margin: 0 0 8px 0;
   color: #2c3e50;
-  font-size: 1.5rem;
+  font-size: 1.3rem;
+}
+
+.playerTurns {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.playerName {
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #7f8c8d;
+  background: rgba(127, 140, 141, 0.1);
+  transition: all 0.3s ease;
+}
+
+.playerName.currentTurn {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  font-weight: 700;
+  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.4);
+  animation: pulse 2s infinite;
+}
+
+.playerName.passed {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 .currentBid {
   color: #7f8c8d;
-  font-size: 1rem;
+  font-size: 0.9rem;
 }
 
 .currentBid strong {
   color: #2c3e50;
-  font-size: 1.2rem;
+  font-size: 1.1rem;
+}
+
+.winningBidder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 8px;
+  padding: 6px 12px;
+  background: rgba(241, 196, 15, 0.15);
+  border-radius: 6px;
+  border: 1px solid rgba(241, 196, 15, 0.3);
+}
+
+.winningLabel {
+  color: #f39c12;
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.winningName {
+  color: #2c3e50;
+  font-weight: 700;
+  font-size: 0.95rem;
 }
 
 .controls {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: 12px;
+  flex: 1;
+  min-height: 0;
 }
 
 .bidSelector {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 15px;
+  gap: 12px;
 }
 
 .adjustButton {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   border: 2px solid #3498db;
-  background: white;
+  background: rgba(255, 255, 255, 0.9);
   color: #3498db;
-  font-size: 24px;
+  font-size: 22px;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s ease;
@@ -89,15 +170,15 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 15px 30px;
-  background: #ecf0f1;
+  padding: 12px 24px;
+  background: rgba(236, 240, 241, 0.8);
   border-radius: 8px;
-  min-width: 120px;
+  min-width: 100px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .bidAmount {
-  font-size: 2rem;
+  font-size: 1.7rem;
   font-weight: bold;
   color: #2c3e50;
   transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
@@ -111,10 +192,12 @@
   0% {
     transform: scale(1);
   }
+
   50% {
     transform: scale(1.1);
-    background: #d5dbdb;
+    background: rgba(213, 219, 219, 0.8);
   }
+
   100% {
     transform: scale(1);
   }
@@ -142,17 +225,17 @@
 
 .button {
   flex: 1;
-  padding: 12px 20px;
+  padding: 10px 16px;
   border: none;
   border-radius: 8px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: bold;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 
 .button:disabled {
-  opacity: 0.5;
+  opacity: 0.85;
   cursor: not-allowed;
 }
 
@@ -184,19 +267,10 @@
   box-shadow: 0 4px 8px rgba(231, 76, 60, 0.3);
 }
 
-.waitingMessage {
-  text-align: center;
-  padding: 10px;
-  background: #fff3cd;
-  border-radius: 6px;
-  color: #856404;
-  font-size: 0.9rem;
-}
-
 .passedMessage {
   text-align: center;
   padding: 20px;
-  background: #d1ecf1;
+  background: rgba(209, 236, 241, 0.85);
   border-radius: 8px;
   color: #0c5460;
   font-size: 1rem;
@@ -208,7 +282,7 @@
   align-items: center;
   gap: 8px;
   padding: 15px;
-  background: #fff3cd;
+  background: rgba(255, 243, 205, 0.85);
   border-radius: 8px;
   border: 2px dashed #ffc107;
 }
@@ -237,11 +311,101 @@
   font-style: italic;
 }
 
+.biddingLog {
+  padding: 12px;
+  background: rgba(52, 152, 219, 0.1);
+  border-radius: 8px;
+  border-left: 3px solid rgba(52, 152, 219, 0.4);
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.logTitle {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #2c3e50;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.logEntries {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1;
+  overflow-y: auto;
+  max-height: 110px;
+  padding-right: 4px;
+}
+
+.logEntries::-webkit-scrollbar {
+  width: 6px;
+}
+
+.logEntries::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 3px;
+}
+
+.logEntries::-webkit-scrollbar-thumb {
+  background: rgba(52, 152, 219, 0.4);
+  border-radius: 3px;
+}
+
+.logEntries::-webkit-scrollbar-thumb:hover {
+  background: rgba(52, 152, 219, 0.6);
+}
+
+.logEntry {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 0.85rem;
+  padding: 6px 8px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 4px;
+}
+
+.logPlayer {
+  font-weight: 600;
+  color: #2c3e50;
+  font-size: 0.8rem;
+}
+
+.logBid {
+  color: #27ae60;
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.logPass {
+  color: #95a5a6;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .biddingPanel {
-    min-width: 280px;
+    width: 85vw;
+    max-width: 90vw;
     padding: 18px;
+  }
+
+  .mainContent {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .rightColumn {
+    flex: 1;
+  }
+
+  .biddingLog {
+    border-left: none;
+    border-top: 3px solid rgba(52, 152, 219, 0.4);
   }
 
   .header h3 {
@@ -274,7 +438,7 @@
 
 @media (max-width: 480px) {
   .biddingPanel {
-    min-width: 260px;
+    width: 90vw;
     padding: 16px;
   }
 

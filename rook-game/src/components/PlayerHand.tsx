@@ -1,3 +1,4 @@
+import React from 'react';
 import { Card as CardComponent } from './Card';
 import type { Card } from '../types';
 import styles from './PlayerHand.module.css';

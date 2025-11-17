@@ -1,36 +1,34 @@
 import { useGame } from '../contexts';
-import type { TeamId } from '../types';
 import styles from './GameEnd.module.css';
 
 export const GameEnd = () => {
   const { state } = useGame();
   const { scores, players, completedTricks } = state;
 
-  // Get team scores
-  const team1Score = scores.get('team1') || 0;
-  const team2Score = scores.get('team2') || 0;
+  // Find the winner (highest individual score)
+  let winnerId: string | null = null;
+  let highestScore = 0;
+  scores.forEach((score, playerId) => {
+    if (score > highestScore) {
+      highestScore = score;
+      winnerId = playerId;
+    }
+  });
 
-  // Determine winning team
-  const team1Won = team1Score >= 300 && team1Score > team2Score;
-  const team2Won = team2Score >= 300 && team2Score > team1Score;
-  const winningTeam: TeamId | null = team1Won ? 'team1' : team2Won ? 'team2' : null;
+  const winner = players.find(p => p.id === winnerId);
 
-  // Get team names (using player names)
-  const team1Players = players.filter(p => p.teamId === 'team1');
-  const team2Players = players.filter(p => p.teamId === 'team2');
-
-  const team1Name = team1Players.length > 0
-    ? `${team1Players[0].name} & ${team1Players[1]?.name || 'Partner'}`
-    : 'Team 1';
-  const team2Name = team2Players.length > 0
-    ? `${team2Players[0].name} & ${team2Players[1]?.name || 'Partner'}`
-    : 'Team 2';
-
-  const winningTeamName = winningTeam === 'team1' ? team1Name : team2Name;
+  // Sort players by score for display
+  const sortedPlayers = [...players].sort((a, b) => {
+    const scoreA = scores.get(a.id) || 0;
+    const scoreB = scores.get(b.id) || 0;
+    return scoreB - scoreA; // Descending order
+  });
 
   // Calculate game statistics
   const totalRounds = Math.ceil(completedTricks.length / 13); // Each round has 13 tricks
-  const pointDifference = Math.abs(team1Score - team2Score);
+  const secondPlace = sortedPlayers[1];
+  const secondPlaceScore = scores.get(secondPlace?.id) || 0;
+  const pointDifference = highestScore - secondPlaceScore;
 
   const handleNewGame = () => {
     // Reset to setup phase for a new game
@@ -43,29 +41,41 @@ export const GameEnd = () => {
         {/* Victory Message */}
         <div className={styles.victorySection} role="region" aria-label="Game results">
           <h1 className={styles.victoryTitle}>Game Over!</h1>
-          {winningTeam && (
+          {winner && (
             <>
               <div className={styles.trophy} aria-hidden="true">🏆</div>
-              <h2 className={styles.winnerName}>{winningTeamName}</h2>
+              <h2 className={styles.winnerName}>{winner.name}</h2>
               <p className={styles.winnerSubtext}>Wins the Game!</p>
+              <div className={styles.winningScore}>{highestScore} Points</div>
             </>
           )}
         </div>
 
         {/* Final Scores */}
         <div className={styles.scoresSection} role="region" aria-label="Final scores">
-          <h3 className={styles.sectionTitle}>Final Scores</h3>
+          <h3 className={styles.sectionTitle}>Final Standings</h3>
           <div className={styles.scoreCards}>
-            <div className={`${styles.scoreCard} ${team1Won ? styles.winner : ''}`} role="article" aria-label={`Team 1 final score: ${team1Score} points`}>
-              <div className={styles.teamName}>{team1Name}</div>
-              <div className={styles.finalScore} aria-label={`${team1Score} points`}>{team1Score}</div>
-              {team1Won && <div className={styles.winnerBadge} role="status">Winner!</div>}
-            </div>
-            <div className={`${styles.scoreCard} ${team2Won ? styles.winner : ''}`} role="article" aria-label={`Team 2 final score: ${team2Score} points`}>
-              <div className={styles.teamName}>{team2Name}</div>
-              <div className={styles.finalScore} aria-label={`${team2Score} points`}>{team2Score}</div>
-              {team2Won && <div className={styles.winnerBadge} role="status">Winner!</div>}
-            </div>
+            {sortedPlayers.map((player, index) => {
+              const playerScore = scores.get(player.id) || 0;
+              const isWinner = player.id === winnerId;
+              
+              return (
+                <div 
+                  key={player.id}
+                  className={`${styles.scoreCard} ${isWinner ? styles.winner : ''}`} 
+                  role="article" 
+                  aria-label={`${index + 1}. ${player.name}: ${playerScore} points${isWinner ? ', Winner!' : ''}`}
+                >
+                  <div className={styles.placement}>{index + 1}</div>
+                  <div className={styles.playerName}>
+                    {player.name}
+                    {player.id === 'player-0' && <span className={styles.youBadge}>YOU</span>}
+                  </div>
+                  <div className={styles.finalScore} aria-label={`${playerScore} points`}>{playerScore}</div>
+                  {isWinner && <div className={styles.winnerBadge} role="status">Winner!</div>}
+                </div>
+              );
+            })}
           </div>
         </div>
 
@@ -78,8 +88,8 @@ export const GameEnd = () => {
               <span className={styles.statValue} aria-label={`${totalRounds} rounds played`}>{totalRounds}</span>
             </div>
             <div className={styles.statItem}>
-              <span className={styles.statLabel}>Point Difference:</span>
-              <span className={styles.statValue} aria-label={`${pointDifference} point difference`}>{pointDifference}</span>
+              <span className={styles.statLabel}>Winning Margin:</span>
+              <span className={styles.statValue} aria-label={`${pointDifference} point margin`}>{pointDifference}</span>
             </div>
             <div className={styles.statItem}>
               <span className={styles.statLabel}>Total Tricks:</span>

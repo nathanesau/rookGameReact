@@ -14,16 +14,16 @@ export const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
   return (
     <div className={styles.overlay} onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="help-title">
       <div className={styles.modal} onClick={(e) => e.stopPropagation()}>
-        <button 
-          className={styles.closeButton} 
+        <button
+          className={styles.closeButton}
           onClick={onClose}
           aria-label="Close help"
         >
           ×
         </button>
-        
+
         <h2 id="help-title" className={styles.title}>How to Play Rook</h2>
-        
+
         <div className={styles.tabs}>
           <button
             className={`${styles.tab} ${activeTab === 'overview' ? styles.activeTab : ''}`}
@@ -53,10 +53,10 @@ export const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
             <div className={styles.section}>
               <h3>Game Overview</h3>
               <p>
-                Rook is a trick-taking card game for four players in two teams. Partners sit opposite each other.
-                The goal is to be the first team to reach 300 points by winning tricks containing point cards.
+                Rook is a trick-taking card game for four players. Partners change each round based on who wins the bid.
+                The goal is to be the first player to reach 500 points by winning tricks containing point cards.
               </p>
-              
+
               <h4>The Deck</h4>
               <ul>
                 <li>57 cards total: numbered 1-14 in four colors (Red, Yellow, Green, Black)</li>
@@ -77,16 +77,16 @@ export const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
           {activeTab === 'rules' && (
             <div className={styles.section}>
               <h3>Playing Rules</h3>
-              
+
               <h4>Bidding Phase</h4>
               <ul>
-                <li>Bidding starts at 70 and increases in increments of 5</li>
+                <li>Bidding starts at 40 and increases in increments of 5</li>
                 <li>Maximum bid is 120</li>
                 <li>Once you pass, you cannot bid again that round</li>
                 <li>If you have no point cards, you can call for a redeal</li>
               </ul>
 
-              <h4>Playing Tricks</h4>
+              <h4>Playing Phase</h4>
               <ul>
                 <li><strong>Following Suit:</strong> You must play the same color as the card led if you have it</li>
                 <li><strong>Trump:</strong> If you can't follow suit, you can play any card including trump</li>
@@ -110,7 +110,7 @@ export const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
           {activeTab === 'scoring' && (
             <div className={styles.section}>
               <h3>Scoring System</h3>
-              
+
               <h4>Point Cards (Counters)</h4>
               <ul>
                 <li><strong>5s:</strong> 5 points each</li>
@@ -118,7 +118,7 @@ export const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
                 <li><strong>Rook Bird:</strong> 20 points</li>
                 <li><strong>All other cards:</strong> 0 points</li>
               </ul>
-              <p className={styles.highlight}>Total points available: 180</p>
+              <p className={styles.highlight}>Total points available: 120</p>
 
               <h4>Round Scoring</h4>
               <ul>
@@ -129,8 +129,8 @@ export const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
 
               <h4>Winning the Game</h4>
               <ul>
-                <li>First team to reach 300 points wins</li>
-                <li>If both teams reach 300 in the same round, highest score wins</li>
+                <li>First player to reach 500 points wins</li>
+                <li>If multiple players reach 500 in the same round, highest score wins</li>
               </ul>
 
               <h4>Penalties</h4>

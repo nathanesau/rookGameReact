@@ -28,12 +28,10 @@ html, body {
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
   color: white;
-  font-size: 28px;
-  font-weight: bold;
   border: none;
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
   cursor: pointer;
   transition: all 0.3s ease;
   z-index: 999;
@@ -43,18 +41,24 @@ html, body {
   padding: 0;
 }
 
+.help-button svg {
+  width: 28px;
+  height: 28px;
+}
+
 .help-button:hover {
-  transform: scale(1.1) translateY(-2px);
-  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(155, 89, 182, 0.4);
 }
 
 .help-button:active {
-  transform: scale(1.05);
+  transform: scale(0.95);
 }
 
-.help-button:focus {
-  outline: 3px solid rgba(102, 126, 234, 0.5);
+.help-button:focus-visible {
+  outline: 3px solid #9b59b6;
   outline-offset: 3px;
+  box-shadow: 0 0 0 3px rgba(155, 89, 182, 0.4);
 }
 
 /* Loading container */
@@ -70,20 +74,28 @@ html, body {
 /* Responsive help button */
 @media (max-width: 768px) {
   .help-button {
-    width: 48px;
-    height: 48px;
-    font-size: 24px;
+    width: 52px;
+    height: 52px;
     bottom: 16px;
     right: 16px;
+  }
+
+  .help-button svg {
+    width: 26px;
+    height: 26px;
   }
 }
 
 @media (max-width: 480px) {
   .help-button {
-    width: 44px;
-    height: 44px;
-    font-size: 22px;
+    width: 48px;
+    height: 48px;
     bottom: 12px;
     right: 12px;
+  }
+
+  .help-button svg {
+    width: 24px;
+    height: 24px;
   }
 }

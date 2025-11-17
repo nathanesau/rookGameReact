@@ -1,21 +1,15 @@
+import { useState } from 'react';
 import { useGame } from '../contexts';
 import type { TeamId } from '../types';
 import styles from './ScoreBoard.module.css';
 
 export const ScoreBoard = () => {
   const { state } = useGame();
-  const { scores, roundScores, currentBid, highBidder, phase, players } = state;
+  const { scores, roundScores, currentBid, highBidder, phase, players, partnerRevealed, scoreHistory } = state;
+  const [showHistory, setShowHistory] = useState(false);
 
-  // Get team scores
-  const team1Score = scores.get('team1') || 0;
-  const team2Score = scores.get('team2') || 0;
-  const team1RoundScore = roundScores.get('team1') || 0;
-  const team2RoundScore = roundScores.get('team2') || 0;
-
-  // Determine if game has ended and which team won
   const isGameEnd = phase === 'gameEnd';
-  const team1Won = isGameEnd && team1Score >= 300 && team1Score > team2Score;
-  const team2Won = isGameEnd && team2Score >= 300 && team2Score > team1Score;
+  const isRoundEnd = phase === 'roundEnd';
 
   // Get bidding team information
   let biddingTeam: TeamId | null = null;
@@ -23,74 +17,158 @@ export const ScoreBoard = () => {
 
   if (highBidder && currentBid) {
     const bidder = players.find(p => p.id === highBidder);
-    if (bidder) {
+    if (bidder && bidder.teamId) {
       biddingTeam = bidder.teamId;
       bidAmount = currentBid.amount;
     }
   }
 
-  // Get team names (using player names)
-  const team1Players = players.filter(p => p.teamId === 'team1');
-  const team2Players = players.filter(p => p.teamId === 'team2');
+  // Find winner if game ended
+  let winnerId: string | null = null;
+  let highestScore = 0;
+  if (isGameEnd) {
+    scores.forEach((score, playerId) => {
+      if (score > highestScore) {
+        highestScore = score;
+        winnerId = playerId;
+      }
+    });
+  }
 
-  const team1Name = team1Players.length > 0
-    ? `${team1Players[0].name} & ${team1Players[1]?.name || 'Partner'}`
-    : 'Team 1';
-  const team2Name = team2Players.length > 0
-    ? `${team2Players[0].name} & ${team2Players[1]?.name || 'Partner'}`
-    : 'Team 2';
+  // Group players by team for display (only if teams are revealed)
+  const team1Players = partnerRevealed ? players.filter(p => p.teamId === 'team1') : [];
+  const team2Players = partnerRevealed ? players.filter(p => p.teamId === 'team2') : [];
+
+  const team1RoundScore = roundScores.get('team1') || 0;
+  const team2RoundScore = roundScores.get('team2') || 0;
 
   return (
     <div className={styles.scoreBoard} role="region" aria-label="Score board">
-      <h2 className={styles.title}>Score</h2>
-
-      <div className={styles.teams}>
-        {/* Team 1 */}
-        <div className={`${styles.team} ${team1Won ? styles.winner : ''}`} role="article" aria-label={`Team 1: ${team1Name}, total score ${team1Score} points`}>
-          <div className={styles.teamHeader}>
-            <h3 className={styles.teamName}>{team1Name}</h3>
-            {biddingTeam === 'team1' && bidAmount && (
-              <span className={styles.bidBadge} aria-label={`Bidding team with bid of ${bidAmount} points`}>Bid: {bidAmount}</span>
-            )}
-          </div>
-          <div className={styles.scores}>
-            <div className={styles.totalScore}>
-              <span className={styles.scoreLabel}>Total:</span>
-              <span className={styles.scoreValue} aria-label={`${team1Score} points`}>{team1Score}</span>
-            </div>
-            {(phase === 'playing' || phase === 'roundEnd') && team1RoundScore > 0 && (
-              <div className={styles.roundScore}>
-                <span className={styles.scoreLabel}>Round:</span>
-                <span className={styles.scoreValue} aria-label={`${team1RoundScore} points this round`}>{team1RoundScore}</span>
-              </div>
-            )}
-          </div>
-          {team1Won && <div className={styles.winnerBadge} role="status">Winner!</div>}
-        </div>
-
-        {/* Team 2 */}
-        <div className={`${styles.team} ${team2Won ? styles.winner : ''}`} role="article" aria-label={`Team 2: ${team2Name}, total score ${team2Score} points`}>
-          <div className={styles.teamHeader}>
-            <h3 className={styles.teamName}>{team2Name}</h3>
-            {biddingTeam === 'team2' && bidAmount && (
-              <span className={styles.bidBadge} aria-label={`Bidding team with bid of ${bidAmount} points`}>Bid: {bidAmount}</span>
-            )}
-          </div>
-          <div className={styles.scores}>
-            <div className={styles.totalScore}>
-              <span className={styles.scoreLabel}>Total:</span>
-              <span className={styles.scoreValue} aria-label={`${team2Score} points`}>{team2Score}</span>
-            </div>
-            {(phase === 'playing' || phase === 'roundEnd') && team2RoundScore > 0 && (
-              <div className={styles.roundScore}>
-                <span className={styles.scoreLabel}>Round:</span>
-                <span className={styles.scoreValue} aria-label={`${team2RoundScore} points this round`}>{team2RoundScore}</span>
-              </div>
-            )}
-          </div>
-          {team2Won && <div className={styles.winnerBadge} role="status">Winner!</div>}
-        </div>
+      <div className={styles.header}>
+        <h2 className={styles.title}>Scores</h2>
+        {scoreHistory.length > 0 && (
+          <button
+            className={styles.historyButton}
+            onClick={() => setShowHistory(!showHistory)}
+            aria-label={showHistory ? 'Hide score history' : 'Show score history'}
+          >
+            {showHistory ? 'Current' : 'History'}
+          </button>
+        )}
       </div>
+
+      {showHistory && scoreHistory.length > 0 ? (
+        <div className={styles.historyView}>
+          <h3 className={styles.historyTitle}>Score History</h3>
+          <div className={styles.historyTable}>
+            <table>
+              <thead>
+                <tr>
+                  <th>Round</th>
+                  {players.map(player => (
+                    <th key={player.id}>{player.name}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {scoreHistory.map((round) => (
+                  <tr key={round.roundNumber}>
+                    <td className={styles.roundCell}>
+                      {round.roundNumber}
+                      {round.bidMade !== null && (
+                        <span className={round.bidMade ? styles.bidMadeIcon : styles.bidBrokenIcon}>
+                          {round.bidMade ? '✓' : '✗'}
+                        </span>
+                      )}
+                    </td>
+                    {players.map(player => {
+                      const score = round.playerScores.get(player.id) || 0;
+                      const delta = round.roundDeltas.get(player.id) || 0;
+                      const isBidder = round.bidderId === player.id;
+                      return (
+                        <td key={player.id} className={isBidder ? styles.bidderCell : ''}>
+                          <div className={styles.scoreCell}>
+                            <span className={styles.totalScore}>{score}</span>
+                            <span className={delta >= 0 ? styles.positiveDelta : styles.negativeDelta}>
+                              ({delta >= 0 ? '+' : ''}{delta})
+                            </span>
+                          </div>
+                        </td>
+                      );
+                    })}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        <>
+
+      {/* Show team grouping only if teams are revealed and in round/game end */}
+      {partnerRevealed && (isRoundEnd || isGameEnd) && (
+        <div className={styles.roundInfo}>
+          <h3 className={styles.roundTitle}>Round Results</h3>
+          <div className={styles.teams}>
+            {/* Team 1 */}
+            <div className={styles.team}>
+              <div className={styles.teamHeader}>
+                <h4 className={styles.teamName}>
+                  {team1Players.map(p => p.name).join(' & ')}
+                </h4>
+                {biddingTeam === 'team1' && bidAmount && (
+                  <span className={styles.bidBadge}>Bid: {bidAmount}</span>
+                )}
+              </div>
+              <div className={styles.teamScore}>
+                Round: <strong>{team1RoundScore > 0 ? `+${team1RoundScore}` : team1RoundScore}</strong>
+              </div>
+            </div>
+
+            {/* Team 2 */}
+            <div className={styles.team}>
+              <div className={styles.teamHeader}>
+                <h4 className={styles.teamName}>
+                  {team2Players.map(p => p.name).join(' & ')}
+                </h4>
+                {biddingTeam === 'team2' && bidAmount && (
+                  <span className={styles.bidBadge}>Bid: {bidAmount}</span>
+                )}
+              </div>
+              <div className={styles.teamScore}>
+                Round: <strong>{team2RoundScore > 0 ? `+${team2RoundScore}` : team2RoundScore}</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+          {/* Individual Player Scores */}
+          <div className={styles.playerScores}>
+            <h3 className={styles.sectionTitle}>Individual Scores</h3>
+            {players.map(player => {
+              const playerScore = scores.get(player.id) || 0;
+              const isWinner = isGameEnd && player.id === winnerId;
+              
+              return (
+                <div 
+                  key={player.id} 
+                  className={`${styles.playerScore} ${isWinner ? styles.winner : ''}`}
+                  role="article"
+                  aria-label={`${player.name}: ${playerScore} points${isWinner ? ', Winner!' : ''}`}
+                >
+                  <div className={styles.playerName}>
+                    {player.name}
+                    {player.id === 'player-0' && <span className={styles.youBadge}>YOU</span>}
+                  </div>
+                  <div className={styles.scoreValue}>{playerScore}</div>
+                  {isWinner && <div className={styles.winnerBadge}>Winner!</div>}
+                </div>
+              );
+            })}
+          </div>
+        </>
+      )}
     </div>
   );
 };

@@ -1,4 +1,4 @@
-import type { GameState, GameAction, Player, Trick, Card, TeamId } from '../types';
+import type { GameState, GameAction, Player, Trick, Card, TeamId, PlayerId } from '../types';
 import { generateDeck, shuffleDeck } from '../utils/deckUtils';
 import { dealCards, determineTrickWinner } from '../utils/gameEngine';
 import { RuleValidator } from '../utils/ruleValidator';
@@ -15,38 +15,49 @@ export const createInitialState = (): GameState => {
     currentBid: null,
     passedPlayers: new Set(),
     highBidder: null,
+    biddingHistory: [],
+    calledCard: null,
+    partnerId: null,
+    partnerRevealed: false,
     trumpColor: null,
     currentTrick: null,
     completedTricks: [],
+    trickCompleted: false,
     renegeInfo: null,
-    scores: new Map([
-      ['team1', 0],
-      ['team2', 0],
-    ]),
+    scores: new Map(), // Individual player scores
     roundScores: new Map([
       ['team1', 0],
       ['team2', 0],
     ]),
+    scoreHistory: [],
+    currentRound: 0,
   };
 };
 
 const initializeGame = (state: GameState, playerNames: string[]): GameState => {
-  // Create players with alternating teams (partners sit opposite)
+  // Create players without teams (teams determined by partner selection)
   const players: Player[] = playerNames.map((name, index) => ({
     id: `player-${index}`,
     name,
-    teamId: index % 2 === 0 ? 'team1' : 'team2',
+    teamId: null, // Teams assigned after partner selection
     position: index as 0 | 1 | 2 | 3,
     hand: [],
     capturedTricks: [],
   }));
 
-  // Randomly select dealer
-  const dealerIndex = Math.floor(Math.random() * 4);
+  // For the first round, player 1 (player-0) starts bidding
+  // This means dealer is player 4 (player-3), since bidder is to left of dealer
+  const dealerIndex = 3; // Player 4
   const dealerId = players[dealerIndex].id;
 
   // Generate and shuffle deck
   const deck = shuffleDeck(generateDeck());
+
+  // Initialize individual player scores
+  const initialScores = new Map<PlayerId, number>();
+  players.forEach(player => {
+    initialScores.set(player.id, 0);
+  });
 
   return {
     ...state,
@@ -54,23 +65,25 @@ const initializeGame = (state: GameState, playerNames: string[]): GameState => {
     players,
     deck,
     dealerId,
-    currentPlayerId: players[(dealerIndex + 1) % 4].id, // Player to left of dealer
+    currentPlayerId: players[0].id, // Player 1 (player-0) starts bidding
     nest: [],
     currentBid: null,
     passedPlayers: new Set(),
     highBidder: null,
+    calledCard: null,
+    partnerId: null,
+    partnerRevealed: false,
     trumpColor: null,
     currentTrick: null,
     completedTricks: [],
     renegeInfo: null,
-    scores: new Map([
-      ['team1', 0],
-      ['team2', 0],
-    ]),
+    scores: initialScores,
     roundScores: new Map([
       ['team1', 0],
       ['team2', 0],
     ]),
+    scoreHistory: [],
+    currentRound: 1,
   };
 };
 
@@ -81,26 +94,27 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
 
     case 'START_ROUND': {
       // Requirements 10.3, 10.4, 10.5
-      
+
       // Rotate dealer position clockwise (Requirement 10.4)
       const currentDealerIndex = state.players.findIndex(p => p.id === state.dealerId);
       const newDealerIndex = (currentDealerIndex + 1) % 4;
       const newDealerId = state.players[newDealerIndex].id;
-      
+
       // Player to left of dealer starts bidding
       const firstBidderIndex = (newDealerIndex + 1) % 4;
       const firstBidderId = state.players[firstBidderIndex].id;
-      
+
       // Generate and shuffle new deck
       const deck = shuffleDeck(generateDeck());
-      
+
       // Reset round-specific state (Requirement 10.5)
       const resetPlayers = state.players.map(player => ({
         ...player,
+        teamId: null, // Reset teams for new partner selection
         hand: [],
         capturedTricks: [],
       }));
-      
+
       return {
         ...state,
         phase: 'dealing',
@@ -112,6 +126,10 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         currentBid: null,
         passedPlayers: new Set(),
         highBidder: null,
+        biddingHistory: [],
+        calledCard: null,
+        partnerId: null,
+        partnerRevealed: false,
         trumpColor: null,
         currentTrick: null,
         completedTricks: [],
@@ -120,13 +138,28 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
           ['team1', 0],
           ['team2', 0],
         ]),
+        currentRound: state.currentRound + 1,
         // Maintain cumulative scores across rounds (Requirement 10.3)
         // scores: state.scores (unchanged)
+        // scoreHistory: state.scoreHistory (unchanged)
       };
     }
 
     case 'DEAL_CARDS':
       return dealCards(state);
+
+    case 'START_BIDDING': {
+      // Transition from roundStart to bidding
+      if (state.phase !== 'roundStart') {
+        console.error('Can only start bidding from roundStart phase');
+        return state;
+      }
+
+      return {
+        ...state,
+        phase: 'bidding',
+      };
+    }
 
     case 'PLACE_BID': {
       const { playerId, amount } = action.payload;
@@ -169,26 +202,14 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       // Check if all other players have passed (this player wins the bid)
       const activePlayers = state.players.filter(p => !state.passedPlayers.has(p.id));
       if (activePlayers.length === 1 && activePlayers[0].id === playerId) {
-        // This player is the high bidder - add nest cards to their hand
-        const highBidderPlayer = state.players.find(p => p.id === playerId);
-        if (!highBidderPlayer) {
-          console.error('High bidder not found');
-          return state;
-        }
-
-        const updatedPlayers = state.players.map(player =>
-          player.id === playerId
-            ? { ...player, hand: [...player.hand, ...state.nest] }
-            : player
-        );
-
+        // This player is the high bidder
         return {
           ...state,
           currentBid: newBid,
           highBidder: playerId,
           currentPlayerId: playerId,
-          phase: 'nestSelection',
-          players: updatedPlayers,
+          phase: 'biddingComplete',
+          biddingHistory: [...state.biddingHistory, { playerId, action: 'bid', amount }],
         };
       }
 
@@ -196,6 +217,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         ...state,
         currentBid: newBid,
         currentPlayerId: nextPlayerId,
+        biddingHistory: [...state.biddingHistory, { playerId, action: 'bid', amount }],
       };
     }
 
@@ -241,30 +263,19 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
             ...state,
             passedPlayers: newPassedPlayers,
             currentPlayerId: highBidder,
+            biddingHistory: [...state.biddingHistory, { playerId, action: 'pass' }],
             // Stay in bidding phase - last player must make a bid
           };
         }
 
-        // Someone has bid, so the last remaining player wins - add nest cards to their hand
-        const highBidderPlayer = state.players.find(p => p.id === highBidder);
-        if (!highBidderPlayer) {
-          console.error('High bidder not found');
-          return state;
-        }
-
-        const updatedPlayers = state.players.map(player =>
-          player.id === highBidder
-            ? { ...player, hand: [...player.hand, ...state.nest] }
-            : player
-        );
-
+        // Someone has bid, so the last remaining player wins
         return {
           ...state,
           passedPlayers: newPassedPlayers,
           highBidder,
           currentPlayerId: highBidder,
-          phase: 'nestSelection',
-          players: updatedPlayers,
+          phase: 'biddingComplete',
+          biddingHistory: [...state.biddingHistory, { playerId, action: 'pass' }],
         };
       }
 
@@ -272,6 +283,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         ...state,
         passedPlayers: newPassedPlayers,
         currentPlayerId: nextPlayerId,
+        biddingHistory: [...state.biddingHistory, { playerId, action: 'pass' }],
       };
     }
 
@@ -302,14 +314,14 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       // Reset the round with a new deal (Requirement 3.9)
       // Generate and shuffle new deck
       const deck = shuffleDeck(generateDeck());
-      
+
       // Reset players' hands and captured tricks
       const resetPlayers = state.players.map(p => ({
         ...p,
         hand: [],
         capturedTricks: [],
       }));
-      
+
       // Keep the same dealer and starting bidder
       return {
         ...state,
@@ -327,18 +339,52 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       };
     }
 
-    case 'SELECT_NEST_CARDS': {
-      const { cards } = action.payload;
+    case 'CONTINUE_TO_NEST_SELECTION': {
+      // Transition from biddingComplete to nestSelection
+      // This allows UI to show bidding winner message before nest selection
+      if (state.phase !== 'biddingComplete') {
+        console.error('Can only continue to nest selection from biddingComplete phase');
+        return state;
+      }
 
-      // Validate that exactly 5 cards are being discarded
-      if (cards.length !== 5) {
-        console.error('Must discard exactly 5 cards');
+      // Add nest cards to high bidder's hand
+      const highBidderPlayer = state.players.find(p => p.id === state.highBidder);
+      if (!highBidderPlayer) {
+        console.error('High bidder not found');
+        return state;
+      }
+
+      const updatedPlayers = state.players.map(player =>
+        player.id === state.highBidder
+          ? { ...player, hand: [...player.hand, ...state.nest] }
+          : player
+      );
+
+      return {
+        ...state,
+        phase: 'nestSelection',
+        players: updatedPlayers,
+      };
+    }
+
+    case 'SELECT_NEST_CARDS': {
+      const { cardsToAdd, cardsToDiscard } = action.payload;
+
+      // Validate that the same number of cards are being added and discarded
+      if (cardsToAdd.length !== cardsToDiscard.length) {
+        console.error('Must discard the same number of cards as taken from nest');
+        return state;
+      }
+
+      // Validate that at most 3 cards are being taken
+      if (cardsToAdd.length > 3) {
+        console.error('Can only take up to 3 cards from nest');
         return state;
       }
 
       // Validate that it's the high bidder's turn
       if (state.currentPlayerId !== state.highBidder) {
-        console.error('Only the high bidder can discard nest cards');
+        console.error('Only the high bidder can select nest cards');
         return state;
       }
 
@@ -349,22 +395,63 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         return state;
       }
 
-      // Remove discarded cards from player's hand
-      const cardIdsToDiscard = new Set(cards.map(c => c.id));
-      const updatedHand = highBidderPlayer.hand.filter(card => !cardIdsToDiscard.has(card.id));
+      // Validate cards to add are from the nest
+      const nestCardIds = new Set(state.nest.map(c => c.id));
+      const invalidAddCards = cardsToAdd.filter(c => !nestCardIds.has(c.id));
+      if (invalidAddCards.length > 0) {
+        console.error('Cards to add must be from the nest');
+        return state;
+      }
+
+      // Validate cards to discard are from the player's hand (excluding nest cards)
+      const originalHandIds = new Set(
+        highBidderPlayer.hand.filter(c => !nestCardIds.has(c.id)).map(c => c.id)
+      );
+      const invalidDiscardCards = cardsToDiscard.filter(c => !originalHandIds.has(c.id));
+      if (invalidDiscardCards.length > 0) {
+        console.error('Cards to discard must be from your original hand');
+        return state;
+      }
+
+      // Remove nest cards and discarded cards from player's hand, keeping selected nest cards
+      const cardsToAddIds = new Set(cardsToAdd.map(c => c.id));
+      const cardsToDiscardIds = new Set(cardsToDiscard.map(c => c.id));
+      
+      const updatedHand = highBidderPlayer.hand.filter(card => 
+        !nestCardIds.has(card.id) && !cardsToDiscardIds.has(card.id)
+      );
+
+      // Add selected nest cards to hand
+      const finalHand = [...updatedHand, ...cardsToAdd];
+
+      // Validate final hand has exactly 13 cards
+      if (finalHand.length !== 13) {
+        console.error(`Final hand must have exactly 13 cards, got ${finalHand.length}`);
+        return state;
+      }
 
       // Update the player's hand
       const updatedPlayers = state.players.map(player =>
         player.id === state.highBidder
-          ? { ...player, hand: updatedHand }
+          ? { ...player, hand: finalHand }
           : player
       );
 
-      // Store discarded cards in nest and move to trump selection
+      // Update nest: remove taken cards, add discarded cards
+      const remainingNest = state.nest.filter(c => !cardsToAddIds.has(c.id));
+      const newNest = [...remainingNest, ...cardsToDiscard];
+
+      // Validate nest still has 5 cards
+      if (newNest.length !== 5) {
+        console.error(`Nest must have exactly 5 cards, got ${newNest.length}`);
+        return state;
+      }
+
+      // Store updated nest and move to trump selection
       return {
         ...state,
         players: updatedPlayers,
-        nest: cards,
+        nest: newNest,
         phase: 'trumpSelection',
       };
     }
@@ -384,14 +471,86 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         return state;
       }
 
-      // Find the dealer to determine who leads first trick
-      const dealerIndex = state.players.findIndex(p => p.id === state.dealerId);
-      const firstLeadIndex = (dealerIndex + 1) % 4;
-      const firstLeadPlayerId = state.players[firstLeadIndex].id;
-
       return {
         ...state,
         trumpColor: color,
+        phase: 'partnerSelection',
+      };
+    }
+
+    case 'SELECT_PARTNER': {
+      const { card } = action.payload;
+
+      // Validate that it's the high bidder's turn
+      if (state.currentPlayerId !== state.highBidder) {
+        console.error('Only the high bidder can select partner');
+        return state;
+      }
+
+      // Validate trump has been selected
+      if (!state.trumpColor) {
+        console.error('Must select trump before selecting partner');
+        return state;
+      }
+
+      // Validate the high bidder doesn't have this card
+      const highBidder = state.players.find(p => p.id === state.highBidder);
+      if (!highBidder) {
+        console.error('High bidder not found');
+        return state;
+      }
+
+      if (highBidder.hand.some(c => c.id === card.id)) {
+        console.error('Cannot call a card you already have');
+        return state;
+      }
+
+      // Check if the card is in the nest (was discarded)
+      if (state.nest.some(c => c.id === card.id)) {
+        console.error('Cannot call a card that is in the nest');
+        return state;
+      }
+
+      // Find who has the called card (partner is secret for now)
+      console.log('Looking for partner with card:', card.id);
+      console.log('Players hands:', state.players.map(p => ({
+        id: p.id,
+        isHighBidder: p.id === state.highBidder,
+        hasCard: p.hand.some(c => c.id === card.id),
+        handCardIds: p.hand.map(c => c.id)
+      })));
+      
+      const partner = state.players.find(p =>
+        p.id !== state.highBidder && p.hand.some(c => c.id === card.id)
+      );
+
+      // Store the called card and partner ID (secret)
+      const partnerId = partner?.id || null;
+      console.log('Partner found:', partnerId);
+
+      // High bidder (bid winner) leads the first trick
+      const firstLeadPlayerId = state.highBidder!;
+
+      // If no partner found (card in nest or high bidder has it), high bidder plays alone
+      let updatedPlayers = state.players;
+      let partnerRevealed = false;
+      
+      if (partnerId === null) {
+        console.log('No partner found - high bidder plays alone!');
+        // High bidder is team1, everyone else is team2
+        updatedPlayers = state.players.map(p => ({
+          ...p,
+          teamId: p.id === state.highBidder ? 'team1' : 'team2',
+        }));
+        partnerRevealed = true; // Teams are known immediately
+      }
+
+      return {
+        ...state,
+        players: updatedPlayers,
+        calledCard: card,
+        partnerId,
+        partnerRevealed,
         currentPlayerId: firstLeadPlayerId,
         phase: 'playing',
       };
@@ -399,6 +558,11 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
 
     case 'PLAY_CARD': {
       const { playerId, card } = action.payload;
+
+      // Don't allow playing if trick is completed and being animated
+      if (state.trickCompleted) {
+        return state;
+      }
 
       // Validate it's the current player's turn
       if (playerId !== state.currentPlayerId) {
@@ -434,27 +598,55 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       // Detect renege if this is not the lead card (Requirement 7.1)
       if (leadCard !== null) {
         const isRenege = RuleValidator.detectRenege(card, player.hand, leadCard, state.trumpColor);
-        
+
         if (isRenege) {
           // Store renege information for potential correction (Requirement 7.2)
           const renegeInfo = {
             playerId,
             trickIndex: state.completedTricks.length,
             cardPlayed: card,
-            correctCards: player.hand.filter(c => 
+            correctCards: player.hand.filter(c =>
               RuleValidator.canPlayCard(c, player.hand, leadCard, state.trumpColor) && c.id !== card.id
             ),
           };
-          
+
           // For now, we'll allow the play but mark the renege
           // The UI can show a warning and allow correction before the next trick
           console.warn('Renege detected!', renegeInfo);
         }
       }
 
+      // Check if this is the called card being played (reveal partner)
+      let partnerRevealed = state.partnerRevealed;
+      let updatedPlayersWithTeams = state.players;
+
+      if (!state.partnerRevealed && state.calledCard) {
+        console.log('Checking partner card:', {
+          playedCardId: card.id,
+          calledCardId: state.calledCard.id,
+          match: card.id === state.calledCard.id,
+          partnerId: state.partnerId,
+          playerId: playerId
+        });
+        
+        if (card.id === state.calledCard.id) {
+          // Partner revealed! Assign teams
+          partnerRevealed = true;
+          console.log('Partner revealed! Assigning teams...');
+
+          // High bidder and partner are team1, others are team2
+          updatedPlayersWithTeams = state.players.map(p => ({
+            ...p,
+            teamId: (p.id === state.highBidder || p.id === state.partnerId) ? 'team1' : 'team2',
+          }));
+          
+          console.log('Teams assigned:', updatedPlayersWithTeams.map(p => ({ id: p.id, teamId: p.teamId })));
+        }
+      }
+
       // Remove card from player's hand
       const updatedHand = player.hand.filter(c => c.id !== card.id);
-      const updatedPlayers = state.players.map(p =>
+      const updatedPlayers = updatedPlayersWithTeams.map(p =>
         p.id === playerId ? { ...p, hand: updatedHand } : p
       );
 
@@ -508,22 +700,90 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
               : p
           );
 
+          // Calculate scores for the round
+          const team1PlayerIds = playersWithNest.filter(p => p.teamId === 'team1').map(p => p.id);
+          const team2PlayerIds = playersWithNest.filter(p => p.teamId === 'team2').map(p => p.id);
+
+          // Calculate points captured by each team
+          const team1Points = playersWithNest
+            .filter(p => team1PlayerIds.includes(p.id))
+            .reduce((sum, p) => sum + p.capturedTricks.flat().reduce((s, card) => s + card.points, 0), 0);
+          
+          const team2Points = playersWithNest
+            .filter(p => team2PlayerIds.includes(p.id))
+            .reduce((sum, p) => sum + p.capturedTricks.flat().reduce((s, card) => s + card.points, 0), 0);
+
+          // Determine bidding team and apply bid logic
+          const highBidder = playersWithNest.find(p => p.id === state.highBidder);
+          const biddingTeamId = highBidder?.teamId;
+          const bidAmount = state.currentBid?.amount || 0;
+
+          let team1RoundScore = 0;
+          let team2RoundScore = 0;
+
+          if (biddingTeamId === 'team1') {
+            // Team 1 made bid or failed
+            team1RoundScore = team1Points >= bidAmount ? team1Points : -bidAmount;
+            team2RoundScore = team2Points;
+          } else {
+            // Team 2 made bid or failed
+            team2RoundScore = team2Points >= bidAmount ? team2Points : -bidAmount;
+            team1RoundScore = team1Points;
+          }
+
+          const newRoundScores = new Map<TeamId, number>([
+            ['team1', team1RoundScore],
+            ['team2', team2RoundScore],
+          ]);
+
+          // Update individual player scores
+          const newScores = new Map(state.scores);
+          const roundDeltas = new Map<PlayerId, number>();
+          
+          team1PlayerIds.forEach(playerId => {
+            const currentScore = newScores.get(playerId) || 0;
+            newScores.set(playerId, currentScore + team1RoundScore);
+            roundDeltas.set(playerId, team1RoundScore);
+          });
+          team2PlayerIds.forEach(playerId => {
+            const currentScore = newScores.get(playerId) || 0;
+            newScores.set(playerId, currentScore + team2RoundScore);
+            roundDeltas.set(playerId, team2RoundScore);
+          });
+
+          // Create round history entry
+          const roundHistory = {
+            roundNumber: state.currentRound,
+            playerScores: new Map(newScores),
+            roundDeltas,
+            bidAmount: bidAmount,
+            bidderId: state.highBidder,
+            bidMade: biddingTeamId === 'team1' ? team1Points >= bidAmount : team2Points >= bidAmount,
+          };
+
           return {
             ...state,
             players: playersWithNest,
             currentTrick: null,
             completedTricks: [...state.completedTricks, updatedTrick],
+            partnerRevealed: true,
+            scores: newScores,
+            roundScores: newRoundScores,
+            scoreHistory: [...state.scoreHistory, roundHistory],
             phase: 'roundEnd',
           };
         }
 
         // Move to next trick with winner leading (Requirement 5.8)
+        // Keep completed trick visible for animations by storing it separately
         return {
           ...state,
           players: playersWithCapturedTrick,
-          currentTrick: null,
+          currentTrick: updatedTrick, // Keep for TrickArea to display
           completedTricks: [...state.completedTricks, updatedTrick],
           currentPlayerId: winnerId,
+          partnerRevealed,
+          trickCompleted: true, // Flag to prevent new cards being played
         };
       }
 
@@ -537,6 +797,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         players: updatedPlayers,
         currentTrick: updatedTrick,
         currentPlayerId: nextPlayerId,
+        partnerRevealed,
       };
     }
 
@@ -618,12 +879,12 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
 
       // Find the player and their team
       const player = state.players.find(p => p.id === playerId);
-      if (!player) {
-        console.error('Player not found');
+      if (!player || !player.teamId) {
+        console.error('Player not found or team not assigned');
         return state;
       }
 
-      const offendingTeamId = player.teamId;
+      const offendingTeamId: TeamId = player.teamId;
       const opposingTeamId: TeamId = offendingTeamId === 'team1' ? 'team2' : 'team1';
 
       // Get the bid amount
@@ -639,25 +900,29 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       for (let i = 0; i < state.completedTricks.length; i++) {
         const trick = state.completedTricks[i];
         const trickCards = Array.from(trick.cards.values());
-        
+
         // Check if any opposing team member won this trick
         if (trick.winnerId && opposingTeamPlayerIds.includes(trick.winnerId)) {
           opposingTeamPoints += ScoreCalculator.calculateTrickPoints(trickCards);
         }
       }
 
-      // Deduct bid amount from offending team (Requirement 7.4)
-      const offendingTeamCurrentScore = state.scores.get(offendingTeamId) || 0;
-      const offendingTeamNewScore = offendingTeamCurrentScore - bidAmount;
+      // Get player IDs for each team
+      const offendingTeamPlayerIds = state.players
+        .filter(p => p.teamId === offendingTeamId)
+        .map(p => p.id);
 
+      // Deduct bid amount from offending team players (Requirement 7.4)
       // Award opposing team their captured points (Requirement 7.5)
-      const opposingTeamCurrentScore = state.scores.get(opposingTeamId) || 0;
-      const opposingTeamNewScore = opposingTeamCurrentScore + opposingTeamPoints;
-
-      const newScores = new Map<TeamId, number>([
-        [offendingTeamId, offendingTeamNewScore],
-        [opposingTeamId, opposingTeamNewScore],
-      ]);
+      const newScores = new Map(state.scores);
+      offendingTeamPlayerIds.forEach(pId => {
+        const currentScore = newScores.get(pId) || 0;
+        newScores.set(pId, currentScore - bidAmount);
+      });
+      opposingTeamPlayerIds.forEach(pId => {
+        const currentScore = newScores.get(pId) || 0;
+        newScores.set(pId, currentScore + opposingTeamPoints);
+      });
 
       const newRoundScores = new Map<TeamId, number>([
         [offendingTeamId, -bidAmount],
@@ -674,20 +939,37 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       };
     }
 
+    case 'CLEAR_TRICK':
+      // Clear the completed trick after animations
+      return {
+        ...state,
+        currentTrick: null,
+        trickCompleted: false,
+      };
+
     case 'COMPLETE_TRICK':
       return state;
 
     case 'END_ROUND': {
       // Requirements 8.8, 8.9, 8.10, 10.1, 10.2
-      
+
+      // If partner was never revealed, reveal teams now
+      let finalPlayers = state.players;
+      if (!state.partnerRevealed && state.partnerId) {
+        finalPlayers = state.players.map(p => ({
+          ...p,
+          teamId: (p.id === state.highBidder || p.id === state.partnerId) ? 'team1' : 'team2',
+        }));
+      }
+
       // Calculate scores for each team
-      const team1PlayerIds = state.players.filter(p => p.teamId === 'team1').map(p => p.id);
-      const team2PlayerIds = state.players.filter(p => p.teamId === 'team2').map(p => p.id);
-      
+      const team1PlayerIds = finalPlayers.filter(p => p.teamId === 'team1').map(p => p.id);
+      const team2PlayerIds = finalPlayers.filter(p => p.teamId === 'team2').map(p => p.id);
+
       // Find the last trick winner
       const lastTrick = state.completedTricks[state.completedTricks.length - 1];
       const lastTrickWinnerId = lastTrick?.winnerId || null;
-      
+
       // Calculate raw points captured by each team (Requirement 8.1)
       // Use completedTricks which contain the actual cards played
       const team1CapturedPoints = ScoreCalculator.calculateTeamScore(
@@ -696,23 +978,23 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         state.nest,
         lastTrickWinnerId
       );
-      
+
       const team2CapturedPoints = ScoreCalculator.calculateTeamScore(
         state.completedTricks,
         team2PlayerIds,
         state.nest,
         lastTrickWinnerId
       );
-      
+
       // Determine which team was the bidding team
-      const highBidder = state.players.find(p => p.id === state.highBidder);
+      const highBidder = finalPlayers.find(p => p.id === state.highBidder);
       const biddingTeamId = highBidder?.teamId;
       const bidAmount = state.currentBid?.amount || 0;
-      
+
       // Calculate round scores based on bid result
       let team1RoundScore = 0;
       let team2RoundScore = 0;
-      
+
       if (biddingTeamId === 'team1') {
         // Team 1 was bidding - apply bid result (Requirements 8.3, 8.4, 8.5)
         team1RoundScore = ScoreCalculator.applyBidResult(team1CapturedPoints, bidAmount);
@@ -724,49 +1006,44 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         // Team 1 always gets their captured points (Requirement 8.6)
         team1RoundScore = team1CapturedPoints;
       }
-      
-      // Update cumulative scores (Requirement 10.2)
-      const newTeam1Score = (state.scores.get('team1') || 0) + team1RoundScore;
-      const newTeam2Score = (state.scores.get('team2') || 0) + team2RoundScore;
-      
-      const newScores = new Map<TeamId, number>([
-        ['team1', newTeam1Score],
-        ['team2', newTeam2Score],
-      ]);
-      
+
       const newRoundScores = new Map<TeamId, number>([
         ['team1', team1RoundScore],
         ['team2', team2RoundScore],
       ]);
-      
-      // Check for 300-point win condition (Requirements 8.8, 8.9, 8.10)
-      const team1Wins = newTeam1Score >= 300;
-      const team2Wins = newTeam2Score >= 300;
-      
-      if (team1Wins || team2Wins) {
-        // At least one team has reached 300 points
-        if (team1Wins && team2Wins) {
-          // Both teams have 300+ - higher score wins (Requirement 8.10)
-          return {
-            ...state,
-            scores: newScores,
-            roundScores: newRoundScores,
-            phase: 'gameEnd',
-          };
-        } else {
-          // Only one team has 300+ - they win (Requirement 8.9)
-          return {
-            ...state,
-            scores: newScores,
-            roundScores: newRoundScores,
-            phase: 'gameEnd',
-          };
-        }
+
+      // Distribute team scores to individual players
+      const newScores = new Map(state.scores);
+      team1PlayerIds.forEach(playerId => {
+        const currentScore = newScores.get(playerId) || 0;
+        newScores.set(playerId, currentScore + team1RoundScore);
+      });
+      team2PlayerIds.forEach(playerId => {
+        const currentScore = newScores.get(playerId) || 0;
+        newScores.set(playerId, currentScore + team2RoundScore);
+      });
+
+      // Check for 500-point win condition - any individual player
+      const playerScores = Array.from(newScores.values());
+      const hasWinner = playerScores.some(score => score >= 500);
+
+      if (hasWinner) {
+        // At least one player has reached 500 points - game over
+        return {
+          ...state,
+          players: finalPlayers,
+          partnerRevealed: true,
+          scores: newScores,
+          roundScores: newRoundScores,
+          phase: 'gameEnd',
+        };
       }
-      
+
       // No winner yet - stay in roundEnd phase to display results (Requirement 10.1)
       return {
         ...state,
+        players: finalPlayers,
+        partnerRevealed: true,
         scores: newScores,
         roundScores: newRoundScores,
         phase: 'roundEnd',

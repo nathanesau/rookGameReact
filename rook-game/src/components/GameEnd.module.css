@@ -72,6 +72,13 @@
   font-weight: 500;
 }
 
+.winningScore {
+  margin: 1rem 0 0 0;
+  font-size: 1.5rem;
+  color: #27ae60;
+  font-weight: 700;
+}
+
 /* Scores Section */
 .scoresSection {
   margin-bottom: 2rem;
@@ -86,18 +93,21 @@
 }
 
 .scoreCards {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
 }
 
 .scoreCard {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   border-radius: 12px;
-  padding: 1.5rem;
-  text-align: center;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
   transition: all 0.3s ease;
   border: 3px solid transparent;
+  position: relative;
 }
 
 .scoreCard.winner {
@@ -116,22 +126,50 @@
   }
 }
 
-.scoreCard .teamName {
-  font-size: 1rem;
-  color: #34495e;
-  font-weight: 600;
-  margin-bottom: 0.75rem;
+.placement {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #7f8c8d;
+  min-width: 2rem;
+  text-align: center;
 }
 
-.scoreCard.winner .teamName {
+.scoreCard.winner .placement {
+  color: #f1c40f;
+}
+
+.playerName {
+  flex: 1;
+  font-size: 1.1rem;
+  color: #34495e;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.scoreCard.winner .playerName {
   color: white;
 }
 
+.youBadge {
+  background: #3498db;
+  color: white;
+  padding: 0.15rem 0.5rem;
+  border-radius: 8px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .finalScore {
-  font-size: 3rem;
+  font-size: 2rem;
   font-weight: 700;
   color: #2c3e50;
   line-height: 1;
+  min-width: 4rem;
+  text-align: right;
 }
 
 .scoreCard.winner .finalScore {

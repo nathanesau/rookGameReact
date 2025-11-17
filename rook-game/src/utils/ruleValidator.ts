@@ -9,7 +9,7 @@ export class RuleValidator {
    * 
    * Requirements:
    * - Bids must be in increments of 5
-   * - Minimum bid is 70 points
+   * - Minimum bid is 40 points
    * - Maximum bid is 120 points
    * - Bid must be higher than current bid
    * 
@@ -23,8 +23,8 @@ export class RuleValidator {
       return false;
     }
 
-    // Minimum bid is 70
-    if (amount < 70) {
+    // Minimum bid is 40
+    if (amount < 40) {
       return false;
     }
 
@@ -117,7 +117,7 @@ export class RuleValidator {
     if (trumpColor !== null && leadCard.color !== 'rook' && leadCard.color === trumpColor) {
       const trumpCards = hand.filter(c => c.color === trumpColor);
       const hasRookBird = hand.some(c => c.color === 'rook');
-      
+
       // If player only has Rook Bird as trump (and no regular trump cards)
       // then they cannot play non-trump cards
       if (trumpCards.length === 0 && hasRookBird) {
@@ -125,7 +125,7 @@ export class RuleValidator {
         // So this will be false, meaning only Rook Bird can be played
         return false;
       }
-      
+
       // If player has trump cards, they must play trump
       if (trumpCards.length > 0) {
         return card.color === trumpColor;
@@ -158,7 +158,7 @@ export class RuleValidator {
   static isRookBirdPlayable(hand: Card[], _leadCard: Card | null): boolean {
     // Check if player has the Rook Bird card
     const hasRookBird = hand.some(card => card.color === 'rook');
-    
+
     if (!hasRookBird) {
       return false;
     }
@@ -181,7 +181,7 @@ export class RuleValidator {
   static mustPlayRookBird(hand: Card[], leadCard: Card, trumpColor: CardColor | null): boolean {
     // Check if player has the Rook Bird card
     const hasRookBird = hand.some(card => card.color === 'rook');
-    
+
     if (!hasRookBird || trumpColor === null) {
       return false;
     }
@@ -189,7 +189,7 @@ export class RuleValidator {
     // When trump is led and player has Rook Bird but no other trump (Requirement 6.4)
     if (leadCard.color === trumpColor) {
       const trumpCards = hand.filter(c => c.color === trumpColor);
-      
+
       // If player has no trump cards (only Rook Bird counts as trump), must play Rook Bird
       if (trumpCards.length === 0) {
         return true;
@@ -235,14 +235,14 @@ export class RuleValidator {
     if (trumpColor !== null && leadCard.color === trumpColor) {
       const trumpCards = handBeforePlay.filter(c => c.color === trumpColor);
       const hasRookBird = handBeforePlay.some(c => c.color === 'rook');
-      
+
       // If player only has Rook Bird as trump (no regular trump cards)
       if (trumpCards.length === 0 && hasRookBird) {
         // Must play Rook Bird - but we already returned early if it was rook
         // So if we're here, they didn't play the Rook Bird
         return true; // Renege: had Rook Bird but didn't play it
       }
-      
+
       // If player has trump cards, they must play trump
       // At this point, playedCard.color is CardColor (not 'rook' due to early return)
       if (trumpCards.length > 0 && playedCard.color !== trumpColor) {

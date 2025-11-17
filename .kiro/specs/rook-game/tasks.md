@@ -84,7 +84,7 @@
 - [x] 12. Implement Rook Bird special rules
   - Create RuleValidator.isRookBirdPlayable() method
   - Implement "Rook Bird can be played anytime" rule
-  - Implement "Rook Bird is highest trump" rule
+  - Implement "Rook Bird is lowest trump" rule
   - Handle "must play trump when Rook Bird is led" rule
   - Handle "must play Rook Bird when trump led and no other trump" rule
   - _Requirements: 6.1, 6.2, 6.3, 6.4, 6.5_
@@ -125,7 +125,7 @@
   - Create END_ROUND action
   - Calculate and display round results
   - Update cumulative scores
-  - Check for 300-point win condition
+  - Check for 500-point win condition
   - Handle tie-breaker (higher score wins)
   - Create END_GAME action
   - _Requirements: 8.8, 8.9, 8.10, 10.1, 10.2, 10.6_

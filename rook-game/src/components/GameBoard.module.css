@@ -8,14 +8,22 @@
   background: #1a1a1a;
 }
 
+.gameBoardInner {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
 /* Top Bar */
 .topBar {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 60px;
-  padding: 0 20px;
+  height: 80px;
+  padding: 8px 20px;
   background: rgba(0, 0, 0, 0.85);
   backdrop-filter: blur(10px);
   z-index: 1000;
@@ -23,6 +31,7 @@
   justify-content: space-between;
   align-items: center;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  overflow: visible;
 }
 
 .gameTitle {
@@ -74,9 +83,12 @@
 }
 
 @keyframes pulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
   }
+
   50% {
     opacity: 0.7;
   }
@@ -120,7 +132,7 @@
 /* Game Content */
 .gameContent {
   position: absolute;
-  top: 60px;
+  top: 80px;
   left: 0;
   right: 0;
   bottom: 0;
@@ -150,6 +162,7 @@
     opacity: 0;
     transform: translateY(-20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -157,10 +170,13 @@
 }
 
 @keyframes dealingPulse {
-  0%, 100% {
+
+  0%,
+  100% {
     opacity: 1;
     transform: translateY(0) scale(1);
   }
+
   50% {
     opacity: 0.8;
     transform: translateY(-5px) scale(1.02);
@@ -170,21 +186,32 @@
 /* Bidding Overlay */
 .biddingOverlay {
   position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 5%;
   z-index: 100;
+  pointer-events: none;
+}
+
+.biddingOverlay > * {
+  pointer-events: auto;
   animation: slideUpFade 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes slideUpFade {
   from {
     opacity: 0;
-    transform: translate(-50%, -40%) scale(0.95);
+    transform: translateY(20px) scale(0.95);
   }
+
   to {
     opacity: 1;
-    transform: translate(-50%, -50%) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
@@ -199,14 +226,42 @@
   animation: fadeInScale 0.4s ease-out;
 }
 
-/* Trump Selection Container */
-.trumpSelectionContainer {
+/* Trump Selection Overlay */
+.trumpSelectionOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  background: radial-gradient(circle at center, #2d5016 0%, #1a3009 100%);
-  animation: fadeInScale 0.4s ease-out;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.trumpSelectionOverlay > * {
+  pointer-events: auto;
+  animation: slideUpFade 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Partner Selection Overlay */
+.partnerSelectionOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  pointer-events: none;
+}
+
+.partnerSelectionOverlay > * {
+  pointer-events: auto;
+  animation: slideUpFade 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 @keyframes fadeInScale {
@@ -214,6 +269,7 @@
     opacity: 0;
     transform: scale(0.95);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -259,6 +315,7 @@
     opacity: 0;
     transform: scale(0.9);
   }
+
   to {
     opacity: 1;
     transform: scale(1);
@@ -270,24 +327,22 @@
   font-size: 2rem;
 }
 
-.roundScores {
+.playerScores {
   background: rgba(0, 0, 0, 0.2);
   padding: 20px;
   border-radius: 12px;
   margin-bottom: 24px;
 }
 
-.totalScores {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 20px;
-  border-radius: 12px;
-  margin-bottom: 24px;
+.playerLabel {
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 
-.totalScores h3 {
-  margin: 0 0 16px 0;
-  font-size: 1.2rem;
-  opacity: 0.9;
+.scoreDiff {
+  color: #4caf50;
+  font-size: 0.9rem;
+  margin-left: 8px;
 }
 
 .scoreItem {
@@ -364,9 +419,12 @@
 }
 
 @keyframes bounce {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -433,11 +491,6 @@
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .topBar {
-    height: 55px;
-    padding: 0 18px;
-  }
-
   .gameTitle {
     font-size: 1.3rem;
   }
@@ -448,11 +501,6 @@
 }
 
 @media (max-width: 768px) {
-  .topBar {
-    height: 50px;
-    padding: 0 15px;
-  }
-
   .gameTitle {
     font-size: 1.2rem;
   }
@@ -474,10 +522,6 @@
   .yourTurnBadge {
     font-size: 9px;
     padding: 2px 6px;
-  }
-
-  .gameContent {
-    top: 50px;
   }
 
   .roundEndPanel,
@@ -523,11 +567,6 @@
 }
 
 @media (max-width: 480px) {
-  .topBar {
-    height: 48px;
-    padding: 0 12px;
-  }
-
   .gameTitle {
     font-size: 1.1rem;
   }
@@ -542,7 +581,8 @@
   }
 
   .indicatorLabel {
-    display: none; /* Hide labels on very small screens */
+    display: none;
+    /* Hide labels on very small screens */
   }
 
   .indicatorValue {
@@ -552,10 +592,6 @@
   .yourTurnBadge {
     font-size: 8px;
     padding: 2px 5px;
-  }
-
-  .gameContent {
-    top: 48px;
   }
 
   .setupMessage h2,
@@ -619,6 +655,7 @@
 
 /* Touch device optimizations */
 @media (hover: none) and (pointer: coarse) {
+
   .nextRoundButton,
   .newGameButton {
     /* Larger touch targets */
@@ -636,5 +673,93 @@
   .newGameButton:active {
     /* Tap feedback */
     transform: scale(0.98);
+  }
+}
+/* 
+Waiting Container and Overlay */
+.waitingContainer {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.waitingOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  animation: fadeIn 0.3s ease;
+}
+
+.waitingPanel {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  border-radius: 16px;
+  padding: 40px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  text-align: center;
+  max-width: 500px;
+  animation: slideUp 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.waitingPanel h2 {
+  color: #ecf0f1;
+  font-size: 24px;
+  margin: 0 0 24px 0;
+  font-weight: 600;
+}
+
+.waitingSpinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 60px;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive waiting panel */
+@media (max-width: 768px) {
+  .waitingPanel {
+    padding: 32px 24px;
+    max-width: 90%;
+  }
+
+  .waitingPanel h2 {
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 480px) {
+  .waitingPanel {
+    padding: 24px 20px;
+  }
+
+  .waitingPanel h2 {
+    font-size: 18px;
   }
 }

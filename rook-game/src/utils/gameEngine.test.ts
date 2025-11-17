@@ -100,7 +100,7 @@ describe('gameEngine', () => {
       const state = createTestState();
       const newState = dealCards(state);
 
-      expect(newState.phase).toBe('bidding');
+      expect(newState.phase).toBe('roundStart');
     });
 
     it('should deal unique cards (no duplicates)', () => {
@@ -427,7 +427,7 @@ describe('gameEngine', () => {
     });
 
     describe('Rook Bird special rules', () => {
-      it('should award trick to Rook Bird over all other cards', () => {
+      it('should award trick to trump over Rook Bird (Rook is lowest trump)', () => {
         const trick: Trick = {
           leadPlayerId: 'player-0',
           cards: new Map([
@@ -440,10 +440,10 @@ describe('gameEngine', () => {
 
         const winner = determineTrickWinner(trick, 'green');
 
-        expect(winner).toBe('player-2'); // Rook Bird wins
+        expect(winner).toBe('player-1'); // green-14 beats Rook Bird (lowest trump)
       });
 
-      it('should award trick to Rook Bird when led', () => {
+      it('should award trick to trump when Rook Bird is led', () => {
         const trick: Trick = {
           leadPlayerId: 'player-0',
           cards: new Map([
@@ -456,10 +456,10 @@ describe('gameEngine', () => {
 
         const winner = determineTrickWinner(trick, 'green');
 
-        expect(winner).toBe('player-0'); // Rook Bird wins
+        expect(winner).toBe('player-1'); // green-14 beats Rook Bird
       });
 
-      it('should award trick to Rook Bird over highest trump', () => {
+      it('should award trick to highest trump when Rook Bird is played', () => {
         const trick: Trick = {
           leadPlayerId: 'player-0',
           cards: new Map([
@@ -472,7 +472,7 @@ describe('gameEngine', () => {
 
         const winner = determineTrickWinner(trick, 'black');
 
-        expect(winner).toBe('player-2'); // Rook Bird beats all trump
+        expect(winner).toBe('player-0'); // black-14 beats Rook Bird (lowest trump)
       });
     });
 

@@ -1,0 +1,95 @@
+.helpButton {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+  border: none;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.helpButton:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(155, 89, 182, 0.4);
+}
+
+.helpButton:active {
+  transform: scale(0.95);
+}
+
+.helpButton:focus-visible {
+  outline: 3px solid #9b59b6;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px rgba(155, 89, 182, 0.4);
+}
+
+.helpButton svg {
+  width: 28px;
+  height: 28px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .helpButton {
+    width: 52px;
+    height: 52px;
+    bottom: 16px;
+    right: 16px;
+  }
+
+  .helpButton svg {
+    width: 26px;
+    height: 26px;
+  }
+}
+
+@media (max-width: 480px) {
+  .helpButton {
+    width: 48px;
+    height: 48px;
+    bottom: 12px;
+    right: 12px;
+  }
+
+  .helpButton svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .helpButton {
+    min-width: 56px;
+    min-height: 56px;
+  }
+
+  .helpButton:hover {
+    transform: none;
+  }
+
+  .helpButton:active {
+    transform: scale(0.95);
+  }
+}

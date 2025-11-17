@@ -10,40 +10,56 @@
 
 .playedCard {
   position: absolute;
-  animation: cardPlay 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  transition: all 0.3s ease-in-out;
+  animation: cardFadeIn 0.3s ease-out;
+  animation-fill-mode: forwards;
 }
 
-/* Player positions around the trick area */
+/* Player positions around the trick area - overlapping with rotation */
 .bottomPosition {
-  bottom: 0;
+  bottom: 40px;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .topPosition {
-  top: 0;
+  top: 20px;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translateX(-50%) translateY(10px);
 }
 
 .leftPosition {
-  left: 0;
+  left: 20px;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-50%) translateX(10px) rotate(-90deg);
 }
 
 .rightPosition {
-  right: 0;
+  right: 20px;
   top: 50%;
-  transform: translateY(-50%);
+  transform: translateY(-50%) translateX(-10px) rotate(90deg);
 }
 
-/* Winning card highlight */
+/* Winning card highlight - keep rotation, just add glow and scale */
 .winningCard {
   animation: winningPulse 0.5s ease-in-out;
   filter: drop-shadow(0 0 10px gold);
-  transform: scale(1.1);
+}
+
+/* Keep rotation for winning card from left/right positions */
+.playedCard.leftPosition.winningCard {
+  transform: translateY(-50%) translateX(10px) rotate(-90deg) scale(1.1) !important;
+}
+
+.playedCard.rightPosition.winningCard {
+  transform: translateY(-50%) translateX(-10px) rotate(90deg) scale(1.1) !important;
+}
+
+.playedCard.bottomPosition.winningCard {
+  transform: translateX(-50%) scale(1.1) !important;
+}
+
+.playedCard.topPosition.winningCard {
+  transform: translateX(-50%) translateY(10px) scale(1.1) !important;
 }
 
 .playerLabel {
@@ -62,49 +78,240 @@
 }
 
 /* Animations */
-@keyframes cardPlay {
+@keyframes cardFadeIn {
   0% {
     opacity: 0;
-    transform: scale(0.3) translateY(-100px) rotate(180deg);
-  }
-  60% {
-    opacity: 1;
-    transform: scale(1.1) translateY(0) rotate(-5deg);
+    filter: blur(4px);
   }
   100% {
     opacity: 1;
-    transform: scale(1) translateY(0) rotate(0deg);
+    filter: blur(0);
   }
 }
 
 @keyframes winningPulse {
   0%, 100% {
-    transform: scale(1.1);
     filter: drop-shadow(0 0 10px gold);
   }
   50% {
-    transform: scale(1.2);
     filter: drop-shadow(0 0 20px gold) brightness(1.2);
   }
 }
 
-/* Trick collection animation */
-.trickArea.collecting .playedCard {
-  animation: collectTrick 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+/* Points message overlay */
+.pointsOverlay {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 200;
+  animation: fadeIn 0.3s ease-out;
 }
 
-@keyframes collectTrick {
+.pointsMessage {
+  background: linear-gradient(135deg, #4caf50 0%, #2e7d32 100%);
+  color: white;
+  padding: 16px 32px;
+  border-radius: 12px;
+  font-size: 32px;
+  font-weight: bold;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  animation: popIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+@keyframes popIn {
   0% {
-    opacity: 1;
-    transform: scale(1) translateY(0) rotate(0deg);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(0.8) translateY(-30px) rotate(10deg);
+    transform: scale(0.5);
+    opacity: 0;
   }
   100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+
+/* Trick collection animation - non-winning cards slide under winning card, then fly together */
+/* Winning card stays in place during stacking, then flies slower (0.9s total: 0.3s stack + 0.6s fly) */
+.trickArea.collecting .playedCard[data-is-winning="true"] {
+  animation: winnerWaitThenFly 0.9s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* Non-winning cards slide to winning card position, then fly slower (0.9s total: 0.3s stack + 0.6s fly) */
+.trickArea.collecting .playedCard[data-is-winning="false"] {
+  animation: slideUnderWinner 0.9s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* Stagger the stacking slightly for visual effect (2x faster) */
+.trickArea.collecting .playedCard[data-position="0"] {
+  animation-delay: 0s;
+}
+.trickArea.collecting .playedCard[data-position="1"] {
+  animation-delay: 0.025s;
+}
+.trickArea.collecting .playedCard[data-position="2"] {
+  animation-delay: 0.05s;
+}
+.trickArea.collecting .playedCard[data-position="3"] {
+  animation-delay: 0.075s;
+}
+
+/* Different end positions based on winner */
+.trickArea.collecting[data-winner-position="0"] .playedCard[data-is-winning="true"] {
+  animation-name: winnerWaitThenFlyBottom;
+}
+.trickArea.collecting[data-winner-position="1"] .playedCard[data-is-winning="true"] {
+  animation-name: winnerWaitThenFlyLeft;
+}
+.trickArea.collecting[data-winner-position="2"] .playedCard[data-is-winning="true"] {
+  animation-name: winnerWaitThenFlyTop;
+}
+.trickArea.collecting[data-winner-position="3"] .playedCard[data-is-winning="true"] {
+  animation-name: winnerWaitThenFlyRight;
+}
+
+/* Non-winning cards need to know where the winning card is */
+.trickArea.collecting[data-winner-position="0"] .playedCard[data-is-winning="false"] {
+  animation-name: slideUnderWinnerBottom;
+}
+.trickArea.collecting[data-winner-position="1"] .playedCard[data-is-winning="false"] {
+  animation-name: slideUnderWinnerLeft;
+}
+.trickArea.collecting[data-winner-position="2"] .playedCard[data-is-winning="false"] {
+  animation-name: slideUnderWinnerTop;
+}
+.trickArea.collecting[data-winner-position="3"] .playedCard[data-is-winning="false"] {
+  animation-name: slideUnderWinnerRight;
+}
+
+/* Winning card animations - wait for stack (33%), then fly slower (67%) */
+@keyframes winnerWaitThenFlyBottom {
+  0%, 33% { 
+    opacity: 1;
+  }
+  100% { 
     opacity: 0;
-    transform: scale(0.2) translateY(-100px) rotate(45deg);
+    transform: translateX(-50%) translateY(150px) scale(0.3);
+  }
+}
+
+@keyframes winnerWaitThenFlyLeft {
+  0%, 33% { 
+    opacity: 1;
+  }
+  100% { 
+    opacity: 0;
+    transform: translateY(-50%) translateX(-250px) rotate(-90deg) scale(0.3);
+  }
+}
+
+@keyframes winnerWaitThenFlyTop {
+  0%, 33% { 
+    opacity: 1;
+  }
+  100% { 
+    opacity: 0;
+    transform: translateX(-50%) translateY(-250px) scale(0.3);
+  }
+}
+
+@keyframes winnerWaitThenFlyRight {
+  0%, 33% { 
+    opacity: 1;
+  }
+  100% { 
+    opacity: 0;
+    transform: translateY(-50%) translateX(150px) rotate(90deg) scale(0.3);
+  }
+}
+
+/* Non-winning cards slide to winner's exact position - stack fast (33%), fly slow (67%) */
+/* When winner is at bottom (position 0) - cards move to bottom position */
+@keyframes slideUnderWinnerBottom {
+  0% { 
+    opacity: 1;
+  }
+  33% {
+    opacity: 0.8;
+    /* Move to bottom position exactly */
+    bottom: 40px;
+    left: 50%;
+    top: auto;
+    right: auto;
+    transform: translateX(-50%) rotate(0deg) scale(0.95);
+  }
+  100% { 
+    opacity: 0;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%) translateY(150px) rotate(0deg) scale(0.3);
+  }
+}
+
+/* When winner is at left (position 1) - cards move to left position */
+@keyframes slideUnderWinnerLeft {
+  0% { 
+    opacity: 1;
+  }
+  33% {
+    opacity: 0.8;
+    /* Move to left position exactly */
+    left: 20px;
+    top: 50%;
+    bottom: auto;
+    right: auto;
+    transform: translateY(-50%) translateX(10px) rotate(-90deg) scale(0.95);
+  }
+  100% { 
+    opacity: 0;
+    left: 20px;
+    top: 50%;
+    transform: translateY(-50%) translateX(-250px) rotate(-90deg) scale(0.3);
+  }
+}
+
+/* When winner is at top (position 2) - cards move to top position */
+@keyframes slideUnderWinnerTop {
+  0% { 
+    opacity: 1;
+  }
+  33% {
+    opacity: 0.8;
+    /* Move to top position exactly */
+    top: 20px;
+    left: 50%;
+    bottom: auto;
+    right: auto;
+    transform: translateX(-50%) translateY(10px) rotate(0deg) scale(0.95);
+  }
+  100% { 
+    opacity: 0;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%) translateY(-250px) rotate(0deg) scale(0.3);
+  }
+}
+
+/* When winner is at right (position 3) - cards move to right position */
+@keyframes slideUnderWinnerRight {
+  0% { 
+    opacity: 1;
+  }
+  33% {
+    opacity: 0.8;
+    /* Move to right position exactly */
+    right: 20px;
+    top: 50%;
+    bottom: auto;
+    left: auto;
+    transform: translateY(-50%) translateX(-10px) rotate(90deg) scale(0.95);
+  }
+  100% { 
+    opacity: 0;
+    right: 20px;
+    top: 50%;
+    transform: translateY(-50%) translateX(150px) rotate(90deg) scale(0.3);
   }
 }
 
@@ -133,8 +340,20 @@
     padding: 2px 6px;
   }
 
-  .winningCard {
-    transform: scale(1.08);
+  .playedCard.leftPosition.winningCard {
+    transform: translateY(-50%) translateX(10px) rotate(-90deg) scale(1.08) !important;
+  }
+
+  .playedCard.rightPosition.winningCard {
+    transform: translateY(-50%) translateX(-10px) rotate(90deg) scale(1.08) !important;
+  }
+
+  .playedCard.bottomPosition.winningCard {
+    transform: translateX(-50%) scale(1.08) !important;
+  }
+
+  .playedCard.topPosition.winningCard {
+    transform: translateX(-50%) translateY(10px) scale(1.08) !important;
   }
 }
 
@@ -150,18 +369,31 @@
     padding: 1px 5px;
   }
 
-  .winningCard {
-    transform: scale(1.05);
+  .playedCard.leftPosition.winningCard {
+    transform: translateY(-50%) translateX(10px) rotate(-90deg) scale(1.05) !important;
+    filter: drop-shadow(0 0 8px gold);
+  }
+
+  .playedCard.rightPosition.winningCard {
+    transform: translateY(-50%) translateX(-10px) rotate(90deg) scale(1.05) !important;
+    filter: drop-shadow(0 0 8px gold);
+  }
+
+  .playedCard.bottomPosition.winningCard {
+    transform: translateX(-50%) scale(1.05) !important;
+    filter: drop-shadow(0 0 8px gold);
+  }
+
+  .playedCard.topPosition.winningCard {
+    transform: translateX(-50%) translateY(10px) scale(1.05) !important;
     filter: drop-shadow(0 0 8px gold);
   }
 
   @keyframes winningPulse {
     0%, 100% {
-      transform: scale(1.05);
       filter: drop-shadow(0 0 8px gold);
     }
     50% {
-      transform: scale(1.1);
       filter: drop-shadow(0 0 15px gold) brightness(1.2);
     }
   }

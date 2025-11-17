@@ -36,16 +36,17 @@ describe('RuleValidator', () => {
     });
 
     describe('minimum bid', () => {
-      it('should accept bids of 70 or higher', () => {
+      it('should accept bids of 40 or higher', () => {
+        expect(RuleValidator.isValidBid(40, null)).toBe(true);
+        expect(RuleValidator.isValidBid(45, null)).toBe(true);
         expect(RuleValidator.isValidBid(70, null)).toBe(true);
-        expect(RuleValidator.isValidBid(75, null)).toBe(true);
         expect(RuleValidator.isValidBid(100, null)).toBe(true);
       });
 
-      it('should reject bids below 70', () => {
-        expect(RuleValidator.isValidBid(65, null)).toBe(false);
-        expect(RuleValidator.isValidBid(60, null)).toBe(false);
-        expect(RuleValidator.isValidBid(50, null)).toBe(false);
+      it('should reject bids below 40', () => {
+        expect(RuleValidator.isValidBid(35, null)).toBe(false);
+        expect(RuleValidator.isValidBid(30, null)).toBe(false);
+        expect(RuleValidator.isValidBid(20, null)).toBe(false);
         expect(RuleValidator.isValidBid(0, null)).toBe(false);
       });
     });
@@ -91,14 +92,14 @@ describe('RuleValidator', () => {
       });
 
       it('should validate all rules together', () => {
-        // Valid: increment of 5, >= 70, <= 120, > current
+        // Valid: increment of 5, >= 40, <= 120, > current
         expect(RuleValidator.isValidBid(85, 80)).toBe(true);
         
         // Invalid: not increment of 5
         expect(RuleValidator.isValidBid(83, 80)).toBe(false);
         
         // Invalid: below minimum
-        expect(RuleValidator.isValidBid(65, null)).toBe(false);
+        expect(RuleValidator.isValidBid(35, null)).toBe(false);
         
         // Invalid: above maximum
         expect(RuleValidator.isValidBid(125, 120)).toBe(false);

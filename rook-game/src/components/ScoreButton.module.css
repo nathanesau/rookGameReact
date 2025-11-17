@@ -1,0 +1,214 @@
+.scoreButton {
+  position: fixed;
+  bottom: 20px;
+  right: 88px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  border: none;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  z-index: 1000;
+  animation: slideInRight 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.scoreButton:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+}
+
+.scoreButton:active {
+  transform: scale(0.95);
+}
+
+.scoreButton:focus-visible {
+  outline: 3px solid #3498db;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.4);
+}
+
+.scoreButton svg {
+  width: 28px;
+  height: 28px;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 1001;
+  animation: fadeIn 0.3s ease;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.scoreModal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 1002;
+  animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: translate(-50%, -40%) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+  }
+}
+
+.closeButton {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #e74c3c;
+  border: 3px solid white;
+  color: white;
+  font-size: 24px;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  z-index: 1;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.closeButton:hover {
+  background: #c0392b;
+  transform: rotate(90deg) scale(1.1);
+}
+
+.closeButton:active {
+  transform: rotate(90deg) scale(0.95);
+}
+
+.closeButton:focus-visible {
+  outline: 3px solid #e74c3c;
+  outline-offset: 2px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .scoreButton {
+    width: 52px;
+    height: 52px;
+    bottom: 16px;
+    right: 80px;
+  }
+
+  .scoreButton svg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .scoreModal {
+    max-width: 90%;
+    max-height: 80vh;
+  }
+
+  .closeButton {
+    width: 32px;
+    height: 32px;
+    font-size: 20px;
+    top: 0;
+    right: 0;
+  }
+}
+
+@media (max-width: 480px) {
+  .scoreButton {
+    width: 48px;
+    height: 48px;
+    bottom: 12px;
+    right: 72px;
+  }
+
+  .scoreButton svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  .scoreModal {
+    max-width: 95%;
+    max-height: 75vh;
+  }
+
+  .closeButton {
+    width: 28px;
+    height: 28px;
+    font-size: 18px;
+    top: 0;
+    right: 0;
+    border-width: 2px;
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .scoreButton {
+    /* Larger touch target */
+    min-width: 56px;
+    min-height: 56px;
+  }
+
+  .scoreButton:hover {
+    /* Remove hover effects on touch devices */
+    transform: none;
+  }
+
+  .scoreButton:active {
+    /* Tap feedback */
+    transform: scale(0.95);
+  }
+
+  .closeButton:hover {
+    /* Remove hover effects on touch devices */
+    transform: none;
+  }
+
+  .closeButton:active {
+    /* Tap feedback */
+    transform: scale(0.95);
+  }
+}

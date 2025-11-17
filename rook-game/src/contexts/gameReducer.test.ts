@@ -108,7 +108,7 @@ describe('gameReducer - Bidding Phase', () => {
     it('should reject invalid bid amount', () => {
       const action = {
         type: 'PLACE_BID' as const,
-        payload: { playerId: 'player-1', amount: 65 },
+        payload: { playerId: 'player-1', amount: 35 }, // Below minimum of 40
       };
 
       const newState = gameReducer(initialState, action);
@@ -166,9 +166,29 @@ describe('gameReducer - Bidding Phase', () => {
       const newState = gameReducer(stateWithPasses, action);
 
       expect(newState.highBidder).toBe('player-1');
-      expect(newState.phase).toBe('nestSelection');
+      expect(newState.phase).toBe('biddingComplete');
       expect(newState.currentPlayerId).toBe('player-1');
-      // Verify nest cards were added to high bidder's hand
+      // Nest cards NOT added yet - they're added when transitioning to nestSelection
+      const highBidder = newState.players.find(p => p.id === 'player-1');
+      expect(highBidder?.hand.length).toBe(13); // Still 13 cards
+    });
+  });
+
+  describe('CONTINUE_TO_NEST_SELECTION action', () => {
+    it('should add nest cards to high bidder when transitioning to nest selection', () => {
+      const biddingCompleteState = {
+        ...initialState,
+        phase: 'biddingComplete' as const,
+        highBidder: 'player-1',
+        currentPlayerId: 'player-1',
+        currentBid: { playerId: 'player-1', amount: 70 },
+      };
+
+      const action = { type: 'CONTINUE_TO_NEST_SELECTION' as const };
+      const newState = gameReducer(biddingCompleteState, action);
+
+      expect(newState.phase).toBe('nestSelection');
+      // Now nest cards should be added
       const highBidder = newState.players.find(p => p.id === 'player-1');
       expect(highBidder?.hand.length).toBe(18); // 13 original + 5 nest cards
     });
@@ -269,11 +289,11 @@ describe('gameReducer - Bidding Phase', () => {
       const newState = gameReducer(stateWithBidAndPasses, action);
 
       expect(newState.highBidder).toBe('player-1');
-      expect(newState.phase).toBe('nestSelection');
+      expect(newState.phase).toBe('biddingComplete');
       expect(newState.currentPlayerId).toBe('player-1');
-      // Verify nest cards were added to high bidder's hand
+      // Nest cards NOT added yet - they're added when transitioning to nestSelection
       const highBidder = newState.players.find(p => p.id === 'player-1');
-      expect(highBidder?.hand.length).toBe(18); // 13 original + 5 nest cards
+      expect(highBidder?.hand.length).toBe(13); // Still 13 cards
     });
   });
 
@@ -472,7 +492,7 @@ describe('gameReducer - Bidding Phase', () => {
   });
 
   describe('SELECT_NEST_CARDS action', () => {
-    it('should allow high bidder to discard 5 cards', () => {
+    it('should allow high bidder to take up to 3 cards from nest and discard same amount', () => {
       const stateWithHighBidder = {
         ...initialState,
         phase: 'nestSelection' as const,
@@ -480,39 +500,56 @@ describe('gameReducer - Bidding Phase', () => {
         currentPlayerId: 'player-1',
         players: initialState.players.map(p =>
           p.id === 'player-1'
-            ? { ...p, hand: [...p.hand, ...initialState.nest] } // 18 cards
+            ? { ...p, hand: [...p.hand, ...initialState.nest] } // 18 cards (13 + 5 nest)
             : p
         ),
       };
 
-      const cardsToDiscard = stateWithHighBidder.players
-        .find(p => p.id === 'player-1')!
-        .hand.slice(0, 5);
+      const player = stateWithHighBidder.players.find(p => p.id === 'player-1')!;
+      const originalHand = player.hand.slice(0, 13); // First 13 are original hand
+      const nest = initialState.nest;
+
+      // Take 2 cards from nest
+      const cardsToAdd = nest.slice(0, 2);
+      // Discard 2 cards from original hand
+      const cardsToDiscard = originalHand.slice(0, 2);
 
       const action = {
         type: 'SELECT_NEST_CARDS' as const,
-        payload: { cards: cardsToDiscard },
+        payload: { cardsToAdd, cardsToDiscard },
       };
 
       const newState = gameReducer(stateWithHighBidder, action);
 
       const highBidder = newState.players.find(p => p.id === 'player-1');
-      expect(highBidder?.hand.length).toBe(13); // 18 - 5 = 13
-      expect(newState.nest).toEqual(cardsToDiscard);
+      expect(highBidder?.hand.length).toBe(13); // Should have exactly 13 cards
+      expect(newState.nest.length).toBe(5); // Nest should still have 5 cards
       expect(newState.phase).toBe('trumpSelection');
     });
 
-    it('should reject if not exactly 5 cards', () => {
+    it('should reject if taking more than 3 cards from nest', () => {
       const stateWithHighBidder = {
         ...initialState,
         phase: 'nestSelection' as const,
         highBidder: 'player-1',
         currentPlayerId: 'player-1',
+        players: initialState.players.map(p =>
+          p.id === 'player-1'
+            ? { ...p, hand: [...p.hand, ...initialState.nest] }
+            : p
+        ),
       };
+
+      const player = stateWithHighBidder.players.find(p => p.id === 'player-1')!;
+      const originalHand = player.hand.slice(0, 13);
+      const nest = initialState.nest;
 
       const action = {
         type: 'SELECT_NEST_CARDS' as const,
-        payload: { cards: initialState.nest.slice(0, 3) }, // Only 3 cards
+        payload: {
+          cardsToAdd: nest.slice(0, 4), // Try to take 4 cards
+          cardsToDiscard: originalHand.slice(0, 4)
+        },
       };
 
       const newState = gameReducer(stateWithHighBidder, action);
@@ -527,11 +564,23 @@ describe('gameReducer - Bidding Phase', () => {
         phase: 'nestSelection' as const,
         highBidder: 'player-1',
         currentPlayerId: 'player-1',
+        players: initialState.players.map(p =>
+          p.id === 'player-1'
+            ? { ...p, hand: [...p.hand, ...initialState.nest] }
+            : p
+        ),
       };
+
+      const player = stateWithHighBidder.players.find(p => p.id === 'player-1')!;
+      const originalHand = player.hand.slice(0, 13);
+      const nest = initialState.nest;
 
       const action = {
         type: 'SELECT_NEST_CARDS' as const,
-        payload: { cards: initialState.nest },
+        payload: {
+          cardsToAdd: nest.slice(0, 2),
+          cardsToDiscard: originalHand.slice(0, 2)
+        },
       };
 
       // Try to discard as wrong player by changing currentPlayerId
@@ -566,9 +615,8 @@ describe('gameReducer - Bidding Phase', () => {
       const newState = gameReducer(stateAfterDiscard, action);
 
       expect(newState.trumpColor).toBe('red');
-      expect(newState.phase).toBe('playing');
-      // First lead should be player to left of dealer (player-1)
-      expect(newState.currentPlayerId).toBe('player-1');
+      expect(newState.phase).toBe('partnerSelection'); // Next phase is partner selection
+      expect(newState.currentPlayerId).toBe('player-1'); // High bidder selects partner
     });
 
     it('should reject if not high bidder', () => {
@@ -764,8 +812,9 @@ describe('gameReducer - Playing Phase', () => {
         payload: { playerId: 'player-3', card: player3Card },
       });
 
-      // Trick should be complete
-      expect(state.currentTrick).toBeNull();
+      // Trick should be complete (kept for animation)
+      expect(state.trickCompleted).toBe(true);
+      expect(state.currentTrick).not.toBeNull(); // Kept for animation
       expect(state.completedTricks.length).toBe(1);
 
       // Winner (player-2 with red-14) should lead next trick
@@ -815,7 +864,7 @@ describe('gameReducer - Playing Phase', () => {
       expect(winner?.capturedTricks.length).toBe(1);
     });
 
-    it('should award trick to Rook Bird', () => {
+    it('should award trick to trump over Rook Bird (Rook is lowest trump)', () => {
       let state = playingState;
 
       // Player 0 leads with red-5
@@ -839,17 +888,17 @@ describe('gameReducer - Playing Phase', () => {
         payload: { playerId: 'player-2', card: player2Card },
       });
 
-      // Player 3 plays Rook Bird
+      // Player 3 plays Rook Bird (lowest trump)
       const player3Card = state.players.find(p => p.id === 'player-3')!.hand.find(c => c.color === 'rook')!;
       state = gameReducer(state, {
         type: 'PLAY_CARD',
         payload: { playerId: 'player-3', card: player3Card },
       });
 
-      // Player-3 should win with Rook Bird
-      expect(state.currentPlayerId).toBe('player-3');
+      // Player-1 should win with green-3 (beats Rook Bird which is lowest trump)
+      expect(state.currentPlayerId).toBe('player-1');
 
-      const winner = state.players.find(p => p.id === 'player-3');
+      const winner = state.players.find(p => p.id === 'player-1');
       expect(winner?.capturedTricks.length).toBe(1);
     });
 
@@ -962,7 +1011,12 @@ describe('gameReducer - Playing Phase', () => {
 
       // Player-2 won, should be able to lead
       expect(state.currentPlayerId).toBe('player-2');
+      expect(state.trickCompleted).toBe(true);
+
+      // Clear the completed trick (normally done by UI after animation)
+      state = gameReducer(state, { type: 'CLEAR_TRICK' });
       expect(state.currentTrick).toBeNull();
+      expect(state.trickCompleted).toBe(false);
 
       // Player-2 leads next trick
       const player2NextCard = state.players.find(p => p.id === 'player-2')!.hand.find(c => c.value === 9)!;
@@ -1054,8 +1108,10 @@ describe('gameReducer - Round End and Game End', () => {
           },
         ],
         scores: new Map([
-          ['team1', 0],
-          ['team2', 0],
+          ['player-0', 0],
+          ['player-1', 0],
+          ['player-2', 0],
+          ['player-3', 0],
         ]),
         roundScores: new Map([
           ['team1', 0],
@@ -1071,8 +1127,11 @@ describe('gameReducer - Round End and Game End', () => {
       // Team 2 captured: 0 points
       expect(newState.roundScores.get('team1')).toBe(-70);
       expect(newState.roundScores.get('team2')).toBe(0);
-      expect(newState.scores.get('team1')).toBe(-70);
-      expect(newState.scores.get('team2')).toBe(0);
+      // Individual scores: player-0 and player-2 each get -70
+      expect(newState.scores.get('player-0')).toBe(-70);
+      expect(newState.scores.get('player-2')).toBe(-70);
+      expect(newState.scores.get('player-1')).toBe(0);
+      expect(newState.scores.get('player-3')).toBe(0);
       expect(newState.phase).toBe('roundEnd');
     });
 
@@ -1150,8 +1209,10 @@ describe('gameReducer - Round End and Game End', () => {
           },
         ],
         scores: new Map([
-          ['team1', 0],
-          ['team2', 0],
+          ['player-0', 0],
+          ['player-1', 0],
+          ['player-2', 0],
+          ['player-3', 0],
         ]),
         roundScores: new Map([
           ['team1', 0],
@@ -1167,8 +1228,11 @@ describe('gameReducer - Round End and Game End', () => {
       // Team 2 captured: 30 points
       expect(newState.roundScores.get('team1')).toBe(-70);
       expect(newState.roundScores.get('team2')).toBe(30);
-      expect(newState.scores.get('team1')).toBe(-70);
-      expect(newState.scores.get('team2')).toBe(30);
+      // Individual scores: player-0 and player-2 each get -70, player-1 and player-3 each get +30
+      expect(newState.scores.get('player-0')).toBe(-70);
+      expect(newState.scores.get('player-2')).toBe(-70);
+      expect(newState.scores.get('player-1')).toBe(30);
+      expect(newState.scores.get('player-3')).toBe(30);
     });
 
     it('should calculate scores when bidding team exactly makes their bid', () => {
@@ -1245,8 +1309,10 @@ describe('gameReducer - Round End and Game End', () => {
           },
         ],
         scores: new Map([
-          ['team1', 0],
-          ['team2', 0],
+          ['player-0', 0],
+          ['player-1', 0],
+          ['player-2', 0],
+          ['player-3', 0],
         ]),
         roundScores: new Map([
           ['team1', 0],
@@ -1261,14 +1327,18 @@ describe('gameReducer - Round End and Game End', () => {
       // Team 2 captured: 0 points
       expect(newState.roundScores.get('team1')).toBe(85);
       expect(newState.roundScores.get('team2')).toBe(0);
-      expect(newState.scores.get('team1')).toBe(85);
-      expect(newState.scores.get('team2')).toBe(0);
+      // Player scores (team1 players get 85 each, team2 players get 0 each)
+      expect(newState.scores.get('player-0')).toBe(85);
+      expect(newState.scores.get('player-2')).toBe(85);
+      expect(newState.scores.get('player-1')).toBe(0);
+      expect(newState.scores.get('player-3')).toBe(0);
     });
 
-    it('should transition to gameEnd when team reaches 300 points', () => {
+    it('should transition to gameEnd when player reaches 500 points', () => {
       const roundEndState: GameState = {
         ...createInitialState(),
         phase: 'roundEnd',
+        partnerRevealed: true,
         players: [
           {
             id: 'player-0',
@@ -1304,6 +1374,7 @@ describe('gameReducer - Round End and Game End', () => {
           },
         ],
         highBidder: 'player-0', // Team 1 bid
+        partnerId: 'player-2',
         currentBid: { playerId: 'player-0', amount: 70 },
         nest: [createCard('yellow', 10), createCard('black', 5), createCard('green', 5)], // 20 points
         completedTricks: [
@@ -1339,8 +1410,10 @@ describe('gameReducer - Round End and Game End', () => {
           },
         ],
         scores: new Map([
-          ['team1', 220], // Already at 220
-          ['team2', 50],
+          ['player-0', 420], // Player 0 already at 420
+          ['player-1', 150],
+          ['player-2', 380],
+          ['player-3', 200],
         ]),
         roundScores: new Map([
           ['team1', 0],
@@ -1352,15 +1425,19 @@ describe('gameReducer - Round End and Game End', () => {
       const newState = gameReducer(roundEndState, action);
 
       // Team 1 captured: 15 + 30 + 20 + 20 (nest) = 85 points (made bid of 70!)
-      // Team 1 total: 220 + 85 = 305 (wins!)
-      expect(newState.scores.get('team1')).toBe(305);
+      // Player 0 and Player 2 each get +85
+      // Player 0 total: 420 + 85 = 505 (wins!)
+      // Player 2 total: 380 + 85 = 465
+      expect(newState.scores.get('player-0')).toBe(505);
+      expect(newState.scores.get('player-2')).toBe(465);
       expect(newState.phase).toBe('gameEnd');
     });
 
-    it('should handle tie-breaker when both teams reach 300', () => {
+    it('should distribute team scores to individual players correctly', () => {
       const roundEndState: GameState = {
         ...createInitialState(),
         phase: 'roundEnd',
+        partnerRevealed: true,
         players: [
           {
             id: 'player-0',
@@ -1396,6 +1473,7 @@ describe('gameReducer - Round End and Game End', () => {
           },
         ],
         highBidder: 'player-1', // Team 2 bid
+        partnerId: 'player-3',
         currentBid: { playerId: 'player-1', amount: 70 },
         nest: [createCard('yellow', 5)], // 5 points
         completedTricks: [
@@ -1441,8 +1519,10 @@ describe('gameReducer - Round End and Game End', () => {
           },
         ],
         scores: new Map([
-          ['team1', 280],
-          ['team2', 235],
+          ['player-0', 280],
+          ['player-1', 235],
+          ['player-2', 150],
+          ['player-3', 190],
         ]),
         roundScores: new Map([
           ['team1', 0],
@@ -1454,12 +1534,16 @@ describe('gameReducer - Round End and Game End', () => {
       const newState = gameReducer(roundEndState, action);
 
       // Team 1 (non-bidding): 15 + 5 = 20 points
-      // Team 2 (bidding): 40 + 20 + 5 (nest) = 65 points (failed bid of 70)
-      // Team 1 total: 280 + 20 = 300
-      // Team 2 total: 235 - 70 = 165
-      expect(newState.scores.get('team1')).toBe(300);
-      expect(newState.scores.get('team2')).toBe(165);
-      expect(newState.phase).toBe('gameEnd');
+      // Team 2 (bidding): 40 + 20 + 5 (nest) = 65 points (failed bid of 70, so -70)
+      // Player 0 (team1): 280 + 20 = 300
+      // Player 1 (team2): 235 - 70 = 165
+      // Player 2 (team1): 150 + 20 = 170
+      // Player 3 (team2): 190 - 70 = 120
+      expect(newState.scores.get('player-0')).toBe(300);
+      expect(newState.scores.get('player-1')).toBe(165);
+      expect(newState.scores.get('player-2')).toBe(170);
+      expect(newState.scores.get('player-3')).toBe(120);
+      expect(newState.phase).toBe('roundEnd'); // No one reached 500 yet
     });
 
     it('should update cumulative scores across multiple rounds', () => {
@@ -1536,8 +1620,10 @@ describe('gameReducer - Round End and Game End', () => {
           },
         ],
         scores: new Map([
-          ['team1', 85], // Previous rounds
-          ['team2', 60],
+          ['player-0', 85], // Previous rounds - team1 players
+          ['player-1', 60], // team2 players
+          ['player-2', 85], // team1 players
+          ['player-3', 60], // team2 players
         ]),
         roundScores: new Map([
           ['team1', 0],
@@ -1552,8 +1638,11 @@ describe('gameReducer - Round End and Game End', () => {
       // Team 2 captured: 20 points
       expect(newState.roundScores.get('team1')).toBe(-70);
       expect(newState.roundScores.get('team2')).toBe(20);
-      expect(newState.scores.get('team1')).toBe(15); // 85 - 70
-      expect(newState.scores.get('team2')).toBe(80); // 60 + 20
+      // Player scores (team1 players: 85 - 70 = 15, team2 players: 60 + 20 = 80)
+      expect(newState.scores.get('player-0')).toBe(15); // 85 - 70
+      expect(newState.scores.get('player-2')).toBe(15); // 85 - 70
+      expect(newState.scores.get('player-1')).toBe(80); // 60 + 20
+      expect(newState.scores.get('player-3')).toBe(80); // 60 + 20
     });
   });
 

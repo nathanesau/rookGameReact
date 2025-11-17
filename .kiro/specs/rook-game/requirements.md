@@ -2,7 +2,7 @@
 
 ## Introduction
 
-This document outlines the requirements for building a web-based implementation of the Rook card game. Rook is a trick-taking card game played by four players in two teams of two. The game uses a specialized deck with cards numbered 1-14 in four colors (red, yellow, green, black) plus a special Rook Bird card (57 cards total). Players bid for the right to name trump, then play tricks to capture point-scoring cards. The first team to reach 300 points wins.
+This document outlines the requirements for building a web-based implementation of the Rook card game. Rook is a trick-taking card game played by four players in two teams of two. The game uses a specialized deck with cards numbered 1-14 in four colors (red, yellow, green, black) plus a special Rook Bird card (57 cards total). Players bid for the right to name trump, then play tricks to capture point-scoring cards. The first team to reach 500 points wins.
 
 The web application will provide a digital version of the game that allows four players to play together in real-time, handling all game rules, scoring, and turn management automatically.
 
@@ -17,7 +17,7 @@ The web application will provide a digital version of the game that allows four 
 1. WHEN a new game is created THEN the system SHALL initialize a deck with cards 1-14 in four colors plus the Rook Bird card (57 cards total)
 2. WHEN the game starts THEN the system SHALL assign four players to two teams with partners sitting opposite each other
 3. WHEN players join THEN the system SHALL display each player's position and team assignment
-4. WHEN the game initializes THEN the system SHALL set the winning score to 300 points
+4. WHEN the game initializes THEN the system SHALL set the winning score to 500 points
 5. WHEN the game begins THEN the system SHALL randomly select a dealer for the first round
 
 ### Requirement 2: Card Dealing
@@ -40,7 +40,7 @@ The web application will provide a digital version of the game that allows four 
 #### Acceptance Criteria
 
 1. WHEN the dealing is complete THEN the system SHALL start bidding with the player to the left of the dealer
-2. WHEN it is a player's turn to bid THEN the system SHALL allow them to bid in increments of 5 points starting at minimum 70 points
+2. WHEN it is a player's turn to bid THEN the system SHALL allow them to bid in increments of 5 points starting at minimum 40 points
 3. WHEN a player bids THEN the system SHALL enforce that the bid is higher than the current high bid and not exceed 120 points
 4. WHEN a player chooses not to bid THEN the system SHALL allow them to pass
 5. WHEN a player passes THEN the system SHALL prevent them from bidding again in that round
@@ -81,12 +81,12 @@ The web application will provide a digital version of the game that allows four 
 
 ### Requirement 6: Rook Bird Card Special Rules
 
-**User Story:** As a player, I want the Rook Bird card to function according to its special rules, so that it can be used strategically as the highest trump card.
+**User Story:** As a player, I want the Rook Bird card to function according to its special rules, so that it can be used strategically as the lowest trump card.
 
 #### Acceptance Criteria
 
 1. WHEN a player holds the Rook Bird card THEN the system SHALL allow them to play it at any time regardless of suit requirements
-2. WHEN the Rook Bird card is played THEN the system SHALL treat it as the highest trump card
+2. WHEN the Rook Bird card is played THEN the system SHALL treat it as the lowest trump card
 3. WHEN the Rook Bird card is led THEN the system SHALL require all other players to play trump if they have it
 4. WHEN trump is led and a player has the Rook Bird card but no other trump THEN the system SHALL require them to play the Rook Bird card
 5. WHEN the Rook Bird card is in play THEN the system SHALL ensure it wins the trick unless a renege occurs
@@ -116,9 +116,9 @@ The web application will provide a digital version of the game that allows four 
 5. WHEN the bidding team fails their bid THEN the system SHALL subtract the bid amount from their total score and award them zero points for the round
 6. WHEN the non-bidding team's points are counted THEN the system SHALL always add their captured points to their total score
 7. WHEN scores are updated THEN the system SHALL display both teams' current totals
-8. WHEN a team reaches 300 or more points THEN the system SHALL check if the round is complete
-9. WHEN both teams have 300+ points THEN the system SHALL declare the team with the higher score as the winner
-10. WHEN only one team has 300+ points THEN the system SHALL declare that team the winner
+8. WHEN a team reaches 500 or more points THEN the system SHALL check if the round is complete
+9. WHEN both teams have 500+ points THEN the system SHALL declare the team with the higher score as the winner
+10. WHEN only one team has 500+ points THEN the system SHALL declare that team the winner
 
 ### Requirement 9: User Interface and Card Display
 

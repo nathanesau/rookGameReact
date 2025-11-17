@@ -7,7 +7,7 @@ export type PlayerPosition = 0 | 1 | 2 | 3;
 export interface Player {
   id: PlayerId;
   name: string;
-  teamId: TeamId;
+  teamId: TeamId | null; // Null until partner is revealed
   position: PlayerPosition;
   hand: Card[];
   capturedTricks: Card[][];
