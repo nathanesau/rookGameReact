@@ -20,6 +20,47 @@ html, body {
   position: relative;
 }
 
+/* Settings button */
+.settings-button {
+  position: fixed;
+  bottom: 20px;
+  right: 90px;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: all 0.3s ease;
+  z-index: 999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+}
+
+.settings-button svg {
+  width: 28px;
+  height: 28px;
+}
+
+.settings-button:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 16px rgba(52, 152, 219, 0.4);
+}
+
+.settings-button:active {
+  transform: scale(0.95);
+}
+
+.settings-button:focus-visible {
+  outline: 3px solid #3498db;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.4);
+}
+
 /* Help button */
 .help-button {
   position: fixed;
@@ -71,8 +112,20 @@ html, body {
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
 }
 
-/* Responsive help button */
+/* Responsive buttons */
 @media (max-width: 768px) {
+  .settings-button {
+    width: 52px;
+    height: 52px;
+    bottom: 16px;
+    right: 82px;
+  }
+
+  .settings-button svg {
+    width: 26px;
+    height: 26px;
+  }
+
   .help-button {
     width: 52px;
     height: 52px;
@@ -87,6 +140,18 @@ html, body {
 }
 
 @media (max-width: 480px) {
+  .settings-button {
+    width: 48px;
+    height: 48px;
+    bottom: 12px;
+    right: 72px;
+  }
+
+  .settings-button svg {
+    width: 24px;
+    height: 24px;
+  }
+
   .help-button {
     width: 48px;
     height: 48px;

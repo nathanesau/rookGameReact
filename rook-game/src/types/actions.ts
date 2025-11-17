@@ -2,7 +2,7 @@ import type { Card, CardColor } from './card';
 import type { PlayerId } from './player';
 
 export type GameAction =
-  | { type: 'INITIALIZE_GAME'; payload: { playerNames: string[] } }
+  | { type: 'INITIALIZE_GAME'; payload: { playerNames: string[]; winningScore?: number; nestSelectableCards?: number } }
   | { type: 'START_ROUND' }
   | { type: 'DEAL_CARDS' }
   | { type: 'START_BIDDING' }

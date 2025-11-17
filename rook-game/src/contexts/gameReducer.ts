@@ -12,6 +12,8 @@ export const createInitialState = (): GameState => {
     nest: [],
     dealerId: '',
     currentPlayerId: '',
+    winningScore: 500,
+    nestSelectableCards: 3,
     currentBid: null,
     passedPlayers: new Set(),
     highBidder: null,
@@ -23,6 +25,7 @@ export const createInitialState = (): GameState => {
     currentTrick: null,
     completedTricks: [],
     trickCompleted: false,
+    isLastTrick: false,
     renegeInfo: null,
     scores: new Map(), // Individual player scores
     roundScores: new Map([
@@ -34,7 +37,7 @@ export const createInitialState = (): GameState => {
   };
 };
 
-const initializeGame = (state: GameState, playerNames: string[]): GameState => {
+const initializeGame = (state: GameState, playerNames: string[], winningScore = 500, nestSelectableCards = 3): GameState => {
   // Create players without teams (teams determined by partner selection)
   const players: Player[] = playerNames.map((name, index) => ({
     id: `player-${index}`,
@@ -66,6 +69,8 @@ const initializeGame = (state: GameState, playerNames: string[]): GameState => {
     deck,
     dealerId,
     currentPlayerId: players[0].id, // Player 1 (player-0) starts bidding
+    winningScore,
+    nestSelectableCards,
     nest: [],
     currentBid: null,
     passedPlayers: new Set(),
@@ -90,7 +95,12 @@ const initializeGame = (state: GameState, playerNames: string[]): GameState => {
 export const gameReducer = (state: GameState, action: GameAction): GameState => {
   switch (action.type) {
     case 'INITIALIZE_GAME':
-      return initializeGame(state, action.payload.playerNames);
+      return initializeGame(
+        state,
+        action.payload.playerNames,
+        action.payload.winningScore,
+        action.payload.nestSelectableCards
+      );
 
     case 'START_ROUND': {
       // Requirements 10.3, 10.4, 10.5
@@ -133,6 +143,8 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         trumpColor: null,
         currentTrick: null,
         completedTricks: [],
+        trickCompleted: false,
+        isLastTrick: false,
         renegeInfo: null,
         roundScores: new Map([
           ['team1', 0],
@@ -693,84 +705,17 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         const allHandsEmpty = playersWithCapturedTrick.every(p => p.hand.length === 0);
 
         if (allHandsEmpty) {
-          // Award nest to last trick winner (Requirement 5.9)
-          const playersWithNest = playersWithCapturedTrick.map(p =>
-            p.id === winnerId
-              ? { ...p, capturedTricks: [...p.capturedTricks, state.nest] }
-              : p
-          );
-
-          // Calculate scores for the round
-          const team1PlayerIds = playersWithNest.filter(p => p.teamId === 'team1').map(p => p.id);
-          const team2PlayerIds = playersWithNest.filter(p => p.teamId === 'team2').map(p => p.id);
-
-          // Calculate points captured by each team
-          const team1Points = playersWithNest
-            .filter(p => team1PlayerIds.includes(p.id))
-            .reduce((sum, p) => sum + p.capturedTricks.flat().reduce((s, card) => s + card.points, 0), 0);
-          
-          const team2Points = playersWithNest
-            .filter(p => team2PlayerIds.includes(p.id))
-            .reduce((sum, p) => sum + p.capturedTricks.flat().reduce((s, card) => s + card.points, 0), 0);
-
-          // Determine bidding team and apply bid logic
-          const highBidder = playersWithNest.find(p => p.id === state.highBidder);
-          const biddingTeamId = highBidder?.teamId;
-          const bidAmount = state.currentBid?.amount || 0;
-
-          let team1RoundScore = 0;
-          let team2RoundScore = 0;
-
-          if (biddingTeamId === 'team1') {
-            // Team 1 made bid or failed
-            team1RoundScore = team1Points >= bidAmount ? team1Points : -bidAmount;
-            team2RoundScore = team2Points;
-          } else {
-            // Team 2 made bid or failed
-            team2RoundScore = team2Points >= bidAmount ? team2Points : -bidAmount;
-            team1RoundScore = team1Points;
-          }
-
-          const newRoundScores = new Map<TeamId, number>([
-            ['team1', team1RoundScore],
-            ['team2', team2RoundScore],
-          ]);
-
-          // Update individual player scores
-          const newScores = new Map(state.scores);
-          const roundDeltas = new Map<PlayerId, number>();
-          
-          team1PlayerIds.forEach(playerId => {
-            const currentScore = newScores.get(playerId) || 0;
-            newScores.set(playerId, currentScore + team1RoundScore);
-            roundDeltas.set(playerId, team1RoundScore);
-          });
-          team2PlayerIds.forEach(playerId => {
-            const currentScore = newScores.get(playerId) || 0;
-            newScores.set(playerId, currentScore + team2RoundScore);
-            roundDeltas.set(playerId, team2RoundScore);
-          });
-
-          // Create round history entry
-          const roundHistory = {
-            roundNumber: state.currentRound,
-            playerScores: new Map(newScores),
-            roundDeltas,
-            bidAmount: bidAmount,
-            bidderId: state.highBidder,
-            bidMade: biddingTeamId === 'team1' ? team1Points >= bidAmount : team2Points >= bidAmount,
-          };
-
+          // This is the last trick - mark it completed but don't end round yet
+          // Let the animation play, then END_ROUND will be dispatched
           return {
             ...state,
-            players: playersWithNest,
-            currentTrick: null,
+            players: playersWithCapturedTrick,
+            currentTrick: updatedTrick,
             completedTricks: [...state.completedTricks, updatedTrick],
+            currentPlayerId: winnerId,
             partnerRevealed: true,
-            scores: newScores,
-            roundScores: newRoundScores,
-            scoreHistory: [...state.scoreHistory, roundHistory],
-            phase: 'roundEnd',
+            trickCompleted: true,
+            isLastTrick: true, // Flag to indicate this is the final trick
           };
         }
 
@@ -953,10 +898,20 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
     case 'END_ROUND': {
       // Requirements 8.8, 8.9, 8.10, 10.1, 10.2
 
+      // Award nest to last trick winner (Requirement 5.9)
+      const lastTrick = state.completedTricks[state.completedTricks.length - 1];
+      const lastTrickWinnerId = lastTrick?.winnerId || null;
+      
+      const playersWithNest = state.players.map(p =>
+        p.id === lastTrickWinnerId
+          ? { ...p, capturedTricks: [...p.capturedTricks, state.nest] }
+          : p
+      );
+
       // If partner was never revealed, reveal teams now
-      let finalPlayers = state.players;
+      let finalPlayers = playersWithNest;
       if (!state.partnerRevealed && state.partnerId) {
-        finalPlayers = state.players.map(p => ({
+        finalPlayers = playersWithNest.map(p => ({
           ...p,
           teamId: (p.id === state.highBidder || p.id === state.partnerId) ? 'team1' : 'team2',
         }));
@@ -965,10 +920,6 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       // Calculate scores for each team
       const team1PlayerIds = finalPlayers.filter(p => p.teamId === 'team1').map(p => p.id);
       const team2PlayerIds = finalPlayers.filter(p => p.teamId === 'team2').map(p => p.id);
-
-      // Find the last trick winner
-      const lastTrick = state.completedTricks[state.completedTricks.length - 1];
-      const lastTrickWinnerId = lastTrick?.winnerId || null;
 
       // Calculate raw points captured by each team (Requirement 8.1)
       // Use completedTricks which contain the actual cards played
@@ -1014,27 +965,45 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
 
       // Distribute team scores to individual players
       const newScores = new Map(state.scores);
+      const roundDeltas = new Map<PlayerId, number>();
+      
       team1PlayerIds.forEach(playerId => {
         const currentScore = newScores.get(playerId) || 0;
         newScores.set(playerId, currentScore + team1RoundScore);
+        roundDeltas.set(playerId, team1RoundScore);
       });
       team2PlayerIds.forEach(playerId => {
         const currentScore = newScores.get(playerId) || 0;
         newScores.set(playerId, currentScore + team2RoundScore);
+        roundDeltas.set(playerId, team2RoundScore);
       });
 
-      // Check for 500-point win condition - any individual player
+      // Create round history entry
+      const roundHistory = {
+        roundNumber: state.currentRound,
+        playerScores: new Map(newScores),
+        roundDeltas,
+        bidAmount: bidAmount,
+        bidderId: state.highBidder,
+        bidMade: biddingTeamId === 'team1' ? team1CapturedPoints >= bidAmount : team2CapturedPoints >= bidAmount,
+      };
+
+      // Check for winning score condition - any individual player
       const playerScores = Array.from(newScores.values());
-      const hasWinner = playerScores.some(score => score >= 500);
+      const hasWinner = playerScores.some(score => score >= state.winningScore);
 
       if (hasWinner) {
         // At least one player has reached 500 points - game over
         return {
           ...state,
           players: finalPlayers,
+          currentTrick: null,
           partnerRevealed: true,
           scores: newScores,
           roundScores: newRoundScores,
+          scoreHistory: [...state.scoreHistory, roundHistory],
+          trickCompleted: false,
+          isLastTrick: false,
           phase: 'gameEnd',
         };
       }
@@ -1043,9 +1012,13 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       return {
         ...state,
         players: finalPlayers,
+        currentTrick: null,
         partnerRevealed: true,
         scores: newScores,
         roundScores: newRoundScores,
+        scoreHistory: [...state.scoreHistory, roundHistory],
+        trickCompleted: false,
+        isLastTrick: false,
         phase: 'roundEnd',
       };
     }

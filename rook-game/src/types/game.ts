@@ -38,6 +38,10 @@ export interface GameState {
   dealerId: PlayerId;
   currentPlayerId: PlayerId;
 
+  // Game settings
+  winningScore: number; // Configurable winning score (default 500)
+  nestSelectableCards: number; // Number of cards that can be selected from nest (3-5)
+
   // Bidding phase
   currentBid: Bid | null;
   passedPlayers: Set<PlayerId>;
@@ -54,6 +58,7 @@ export interface GameState {
   currentTrick: Trick | null;
   completedTricks: Trick[];
   trickCompleted: boolean; // Flag to prevent playing during trick animations
+  isLastTrick: boolean; // Flag to indicate the final trick of the round
 
   // Renege tracking
   renegeInfo: RenegeInfo | null;

@@ -74,6 +74,21 @@
   min-width: 120px;
   animation: playerInfoSlide 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   animation-fill-mode: backwards;
+  border: 9px solid transparent;
+  transition: border-color 0.3s ease;
+}
+
+/* Team border colors */
+.playerInfo.teamUnknown {
+  border-color: rgba(149, 165, 166, 0.4);
+}
+
+.playerInfo.teamBorder1 {
+  border-color: #3498db;
+}
+
+.playerInfo.teamBorder2 {
+  border-color: #f39c12;
 }
 
 .topPlayer .playerInfo {
@@ -144,13 +159,22 @@
   color: #7f8c8d;
 }
 
+.pointsContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
+  margin-top: 4px;
+  justify-content: center;
+  align-items: center;
+}
+
 .playerPoints {
   font-size: 13px;
   font-weight: 700;
-  margin-top: 4px;
   padding: 3px 8px;
   border-radius: 4px;
   transition: all 0.3s ease;
+  white-space: nowrap;
 }
 
 /* No team assigned yet - grey */
@@ -171,6 +195,22 @@
   color: #f39c12;
   background: rgba(243, 156, 18, 0.15);
   border: 1px solid rgba(243, 156, 18, 0.3);
+}
+
+/* Broken bid - red */
+.playerPoints.broken {
+  color: #e74c3c;
+  background: rgba(231, 76, 60, 0.15);
+  border: 1px solid rgba(231, 76, 60, 0.3);
+  font-weight: 900;
+}
+
+/* Made bid - green */
+.playerPoints.made {
+  color: #27ae60;
+  background: rgba(39, 174, 96, 0.15);
+  border: 1px solid rgba(39, 174, 96, 0.3);
+  font-weight: 900;
 }
 
 .youBadge {

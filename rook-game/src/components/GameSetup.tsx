@@ -3,15 +3,16 @@ import styles from './GameSetup.module.css';
 
 interface GameSetupProps {
   onStartGame: (playerNames: string[]) => void;
+  winningScore?: number;
 }
 
-export const GameSetup: React.FC<GameSetupProps> = ({ onStartGame }) => {
+export const GameSetup: React.FC<GameSetupProps> = ({ onStartGame, winningScore = 500 }) => {
   const [playerName, setPlayerName] = useState<string>('');
   const [error, setError] = useState<string>('');
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     // Validate player name is filled
     if (playerName.trim() === '') {
       setError('Please enter your name');
@@ -70,7 +71,7 @@ export const GameSetup: React.FC<GameSetupProps> = ({ onStartGame }) => {
 
         <div className={styles.info} role="note">
           <p>You'll play with 3 computer players</p>
-          <p>First player to 500 points wins!</p>
+          <p>First player to <span className={styles.winningScore}>{winningScore}</span> points wins!</p>
         </div>
       </div>
     </div>

@@ -11,7 +11,7 @@ interface TrickAreaProps {
 }
 
 export const TrickArea = ({ trick, players }: TrickAreaProps) => {
-  const { dispatch } = useGame();
+  const { state, dispatch } = useGame();
   const [isCollecting, setIsCollecting] = useState(false);
   const [showPointsMessage, setShowPointsMessage] = useState(false);
   const [trickPoints, setTrickPoints] = useState<number>(0);
@@ -61,8 +61,14 @@ export const TrickArea = ({ trick, players }: TrickAreaProps) => {
         console.log('Clearing trick');
         setIsCollecting(false);
         setAnimationStarted(false);
-        // Clear the trick from state
-        dispatch({ type: 'CLEAR_TRICK' });
+        // Check if this is the last trick - if so, end the round
+        if (state.isLastTrick) {
+          console.log('Last trick complete - ending round');
+          dispatch({ type: 'END_ROUND' });
+        } else {
+          // Clear the trick from state
+          dispatch({ type: 'CLEAR_TRICK' });
+        }
       }, 2400);
     }
     

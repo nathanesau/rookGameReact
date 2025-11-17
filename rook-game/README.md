@@ -10,7 +10,7 @@ A modern, fully-featured digital implementation of the classic Rook card game bu
 - **Trump Selection & Nest Management** - High bidder takes nest and discards 5 cards
 - **Interactive Card Play** - Click to play cards with visual feedback
 - **Rook Bird Special Rules** - Lowest trump card with unique gameplay mechanics
-- **Renege Detection** - Automatic detection and penalty system
+- **Automatic Rule Enforcement** - Game prevents invalid plays and ensures proper suit-following
 - **Score Tracking** - Real-time scoring across multiple rounds
 - **Win Condition** - First team to 500 points wins
 

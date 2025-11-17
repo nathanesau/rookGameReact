@@ -4,10 +4,13 @@ import { GameTable } from './GameTable';
 import { BiddingPanel } from './BiddingPanel';
 import { NestDisplay } from './NestDisplay';
 import { TrumpSelector } from './TrumpSelector';
+import { PartnerSelector } from './PartnerSelector';
 import { GameInfo } from './GameInfo';
 import { Announcement } from './Announcement';
+import { ConfirmDialog } from './ConfirmDialog';
 import { getPlayableCards } from '../utils/gameEngine';
 import { aiMakeBid, aiSelectNestCards, aiSelectTrump, aiSelectPartner, aiPlayCard } from '../utils/aiPlayer';
+import { isLikelyBadPlay } from '../utils/playValidator';
 import type { Card, CardColor } from '../types';
 import styles from './GameBoard.module.css';
 
@@ -17,6 +20,7 @@ export const GameBoard = () => {
   const [announcement, setAnnouncement] = useState<string | null>(null);
   const [announcementQueue, setAnnouncementQueue] = useState<string[]>([]);
   const [shownAnnouncements, setShownAnnouncements] = useState<Set<string>>(new Set());
+  const [confirmPlay, setConfirmPlay] = useState<{ card: Card; reason: string } | null>(null);
 
   // Assume player-0 is the human player
   const humanPlayerId = 'player-0';
@@ -213,6 +217,15 @@ export const GameBoard = () => {
           : `${state.calledCard.value} of ${state.calledCard.color.charAt(0).toUpperCase() + state.calledCard.color.slice(1)}`;
         messages.push(`${bidder.name} called the ${cardName} as Partner`);
         
+        // Check if human player has the partner card
+        const humanPlayer = state.players.find(p => p.id === humanPlayerId);
+        if (humanPlayer && state.calledCard) {
+          const hasPartnerCard = humanPlayer.hand.some(c => c.id === state.calledCard!.id);
+          if (hasPartnerCard) {
+            messages.push(`That's YOU! You are the partner on Team 1 with ${bidder.name}`);
+          }
+        }
+        
         // Nest points message
         const nestPoints = state.nest.reduce((sum, card) => sum + card.points, 0);
         if (nestPoints > 0) {
@@ -255,20 +268,74 @@ export const GameBoard = () => {
     }
   }, [state.phase, state.partnerRevealed, state.partnerId, state.highBidder, state.players, state.calledCard, shownAnnouncements]);
 
+  // Check if bid is broken during play
+  useEffect(() => {
+    const key = `bid-broken-${state.currentRound}`;
+    if (state.phase === 'playing' && state.partnerRevealed && state.currentBid && state.highBidder && !shownAnnouncements.has(key)) {
+      // Calculate points captured by bidding team (team1)
+      const team1Players = state.players.filter(p => p.teamId === 'team1');
+      
+      const team1Points = team1Players.reduce((sum, p) => 
+        sum + p.capturedTricks.flat().reduce((s, card) => s + card.points, 0), 0
+      );
+      
+      // Calculate remaining points (in hands + nest)
+      const playedPoints = state.completedTricks.flat().reduce((sum, trick) => 
+        sum + Array.from(trick.cards.values()).reduce((s, card) => s + card.points, 0), 0
+      );
+      const totalPoints = 180; // Total points in deck
+      const remainingPoints = totalPoints - playedPoints;
+      
+      // Check if bidding team (team1) can still make their bid
+      const bidAmount = state.currentBid.amount;
+      const maxPossiblePoints = team1Points + remainingPoints;
+      
+      if (maxPossiblePoints < bidAmount) {
+        // Bid is broken!
+        const biddingTeamNames = team1Players.map(p => p.name).join(' & ');
+        setAnnouncementQueue(prev => [...prev, `The bid is broken! ${biddingTeamNames} cannot reach ${bidAmount} points`]);
+        setShownAnnouncements(prev => new Set(prev).add(key));
+      }
+    }
+  }, [state.phase, state.partnerRevealed, state.completedTricks, state.players, state.currentBid, state.highBidder, state.nest, state.currentRound, shownAnnouncements]);
+
   // Handle card click during playing phase
   const handleCardClick = (card: Card) => {
-    if (state.phase === 'playing' && state.currentPlayerId === humanPlayerId) {
-      if (playableCards.has(card.id)) {
+    // Only allow interaction during playing phase when it's the human player's turn
+    if (state.phase !== 'playing' || state.currentPlayerId !== humanPlayerId) {
+      return;
+    }
+
+    if (playableCards.has(card.id)) {
+      // Check if this is a bad play
+      const badPlayCheck = isLikelyBadPlay(state, humanPlayerId, card);
+      if (badPlayCheck.isBad && badPlayCheck.reason) {
+        // Show confirmation dialog
+        setConfirmPlay({ card, reason: badPlayCheck.reason });
+      } else {
+        // Play the card immediately
         dispatch({
           type: 'PLAY_CARD',
           payload: { playerId: humanPlayerId, card },
         });
         setSelectedCard(null);
       }
-    } else {
-      // Just for visual feedback when not player's turn
-      setSelectedCard(selectedCard?.id === card.id ? null : card);
     }
+  };
+
+  const handleConfirmPlay = () => {
+    if (confirmPlay) {
+      dispatch({
+        type: 'PLAY_CARD',
+        payload: { playerId: humanPlayerId, card: confirmPlay.card },
+      });
+      setConfirmPlay(null);
+      setSelectedCard(null);
+    }
+  };
+
+  const handleCancelPlay = () => {
+    setConfirmPlay(null);
   };
 
   // Handle bidding actions
@@ -323,6 +390,9 @@ export const GameBoard = () => {
       playableCards,
       phase: state.phase,
       highBidder: state.highBidder,
+      currentBid: state.currentBid,
+      calledCard: state.calledCard,
+      partnerRevealed: state.partnerRevealed,
     };
 
     switch (state.phase) {
@@ -385,59 +455,72 @@ export const GameBoard = () => {
         return <GameTable {...gameTableProps} />;
 
       case 'trumpSelection':
-        // Only show trump selector if human player is the high bidder
+        // Show game table with trump selector overlay if human player is the high bidder
         if (state.highBidder === humanPlayerId) {
           return (
-            <div className={styles.trumpSelectionContainer}>
-              <TrumpSelector onSelectTrump={handleSelectTrump} />
-            </div>
+            <>
+              <GameTable {...gameTableProps} />
+              <div className={styles.trumpSelectionOverlay}>
+                <TrumpSelector onSelectTrump={handleSelectTrump} />
+              </div>
+            </>
           );
         }
         // Otherwise show game table (computer player is selecting)
         return <GameTable {...gameTableProps} />;
 
       case 'partnerSelection':
-        // Always show game table during partner selection (AI handles it)
+        // Show partner selector overlay if human player is the high bidder
+        if (state.highBidder === humanPlayerId) {
+          return (
+            <>
+              <GameTable {...gameTableProps} />
+              <div className={styles.partnerSelectionOverlay}>
+                <PartnerSelector
+                  playerHand={humanPlayer?.hand || []}
+                  nest={state.nest}
+                  onSelectPartner={(card) => {
+                    dispatch({
+                      type: 'SELECT_PARTNER',
+                      payload: { card },
+                    });
+                  }}
+                />
+              </div>
+            </>
+          );
+        }
+        // Otherwise show game table (computer player is selecting)
         return <GameTable {...gameTableProps} />;
 
       case 'playing':
         return <GameTable {...gameTableProps} />;
 
       case 'roundEnd':
+        // Get the latest round history to show deltas
+        const latestRound = state.scoreHistory[state.scoreHistory.length - 1];
+        
         return (
           <div className={styles.roundEndContainer}>
             <GameTable {...gameTableProps} />
             <div className={styles.roundEndOverlay}>
               <div className={styles.roundEndPanel}>
                 <h2>Round Complete!</h2>
-                <div className={styles.roundScores}>
-                  <div className={styles.scoreItem}>
-                    <span className={styles.teamLabel}>Team 1:</span>
-                    <span className={styles.scoreValue}>
-                      +{state.roundScores.get('team1') || 0} points
-                    </span>
-                  </div>
-                  <div className={styles.scoreItem}>
-                    <span className={styles.teamLabel}>Team 2:</span>
-                    <span className={styles.scoreValue}>
-                      +{state.roundScores.get('team2') || 0} points
-                    </span>
-                  </div>
-                </div>
-                <div className={styles.totalScores}>
-                  <h3>Total Scores</h3>
-                  <div className={styles.scoreItem}>
-                    <span className={styles.teamLabel}>Team 1:</span>
-                    <span className={styles.scoreValue}>
-                      {state.scores.get('team1') || 0}
-                    </span>
-                  </div>
-                  <div className={styles.scoreItem}>
-                    <span className={styles.teamLabel}>Team 2:</span>
-                    <span className={styles.scoreValue}>
-                      {state.scores.get('team2') || 0}
-                    </span>
-                  </div>
+                <div className={styles.playerScores}>
+                  {state.players.map(player => {
+                    const totalScore = state.scores.get(player.id) || 0;
+                    const delta = latestRound?.roundDeltas.get(player.id) || 0;
+                    const deltaStr = delta >= 0 ? `+${delta}` : `${delta}`;
+                    
+                    return (
+                      <div key={player.id} className={styles.scoreItem}>
+                        <span className={styles.playerName}>{player.name}:</span>
+                        <span className={styles.scoreValue}>
+                          {totalScore} ({deltaStr})
+                        </span>
+                      </div>
+                    );
+                  })}
                 </div>
                 <button
                   className={styles.nextRoundButton}
@@ -496,7 +579,7 @@ export const GameBoard = () => {
         <div className={styles.gameTitle}>
           {state.currentRound > 0 ? `Round ${state.currentRound}` : 'Rook Card Game'}
         </div>
-        <GameInfo />
+        {state.phase !== 'nestSelection' && state.phase !== 'trumpSelection' && <GameInfo />}
       </div>
 
       {/* Main game content */}
@@ -509,6 +592,15 @@ export const GameBoard = () => {
         <Announcement
           message={announcement}
           onComplete={() => setAnnouncement(null)}
+        />
+      )}
+
+      {/* Confirmation dialog */}
+      {confirmPlay && (
+        <ConfirmDialog
+          message={confirmPlay.reason}
+          onConfirm={handleConfirmPlay}
+          onCancel={handleCancelPlay}
         />
       )}
     </div>

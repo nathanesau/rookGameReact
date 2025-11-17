@@ -4,9 +4,11 @@ import styles from './HelpModal.module.css';
 interface HelpModalProps {
   isOpen: boolean;
   onClose: () => void;
+  winningScore?: number;
+  nestSelectableCards?: number;
 }
 
-export const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
+export const HelpModal = ({ isOpen, onClose, winningScore = 500, nestSelectableCards = 3 }: HelpModalProps) => {
   const [activeTab, setActiveTab] = useState<'overview' | 'rules' | 'scoring'>('overview');
 
   if (!isOpen) return null;
@@ -54,7 +56,7 @@ export const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
               <h3>Game Overview</h3>
               <p>
                 Rook is a trick-taking card game for four players. Partners change each round based on who wins the bid.
-                The goal is to be the first player to reach 500 points by winning tricks containing point cards.
+                The goal is to be the first player to reach <span className={styles.winningScore}>{winningScore}</span> points by winning tricks containing point cards.
               </p>
 
               <h4>The Deck</h4>
@@ -67,7 +69,7 @@ export const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
               <ol>
                 <li><strong>Dealing:</strong> Each player receives 13 cards, 5 cards go to the "nest"</li>
                 <li><strong>Bidding:</strong> Players bid for the right to name trump and take the nest</li>
-                <li><strong>Trump Selection:</strong> High bidder takes nest, discards 5 cards, names trump</li>
+                <li><strong>Trump Selection:</strong> High bidder takes nest, selects up to <span className={styles.nestSelectable}>{nestSelectableCards}</span> cards from it, discards same number, names trump</li>
                 <li><strong>Playing:</strong> Players play 13 tricks, trying to capture point cards</li>
                 <li><strong>Scoring:</strong> Teams count points, check if bidding team made their bid</li>
               </ol>
@@ -129,15 +131,13 @@ export const HelpModal = ({ isOpen, onClose }: HelpModalProps) => {
 
               <h4>Winning the Game</h4>
               <ul>
-                <li>First player to reach 500 points wins</li>
-                <li>If multiple players reach 500 in the same round, highest score wins</li>
+                <li>
+                  First player to reach <span className={styles.winningScore}>{winningScore}</span> points wins
+                </li>
+                <li>
+                  If multiple players reach <span className={styles.winningScore}>{winningScore}</span> in the same round, highest score wins
+                </li>
               </ul>
-
-              <h4>Penalties</h4>
-              <p>
-                <strong>Renege:</strong> If you fail to follow suit when you could have, the round ends immediately.
-                Your team loses points equal to the bid, and opponents get points for counters they captured.
-              </p>
             </div>
           )}
         </div>

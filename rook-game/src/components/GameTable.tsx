@@ -106,36 +106,90 @@ export const GameTable = ({
         return null;
     };
 
+    // Get team border class for player info box
+    const getTeamBorderClass = (player: Player | undefined): string => {
+        const knownTeam = getKnownTeam(player);
+        if (!knownTeam || knownTeam === '?') {
+            return styles.teamUnknown;
+        }
+        return knownTeam === '1' ? styles.teamBorder1 : styles.teamBorder2;
+    };
+
+    // Get list of players on a known team (based on what human knows)
+    const getKnownTeamPlayers = (teamNumber: string): Player[] => {
+        return players.filter(p => {
+            const knownTeam = getKnownTeam(p);
+            return knownTeam === teamNumber;
+        });
+    };
+
     // Calculate points captured by each player
     const calculatePoints = (player: Player | undefined): number => {
         if (!player) return 0;
         return player.capturedTricks.flat().reduce((sum, card) => sum + card.points, 0);
     };
 
-    // Check if bid is broken for a player's team
-    const getPointsInfo = (player: Player | undefined): { text: string; isBroken: boolean } => {
-        if (!player || !currentBid || !highBidder) return { text: '0 pts', isBroken: false };
+    // Check if bid is broken or made for a player's team
+    const getPointsInfo = (player: Player | undefined): { 
+        individualText: string; 
+        teamText: string;
+        isBroken: boolean;
+        isMade: boolean;
+    } => {
+        if (!player) {
+            return { individualText: '0 pts', teamText: 'Team: ? pts', isBroken: false, isMade: false };
+        }
         
-        const points = calculatePoints(player);
+        const individualPoints = calculatePoints(player);
         
-        // Only check if teams are assigned
-        if (!player.teamId) return { text: `${points} pts`, isBroken: false };
+        // Check what team the human knows this player is on
+        const knownTeam = getKnownTeam(player);
         
-        // Find the bidding team
-        const bidderPlayer = players.find(p => p.id === highBidder);
-        if (!bidderPlayer || !bidderPlayer.teamId) return { text: `${points} pts`, isBroken: false };
+        // If no bid or team not known yet, show unknown
+        if (!currentBid || !highBidder || !knownTeam) {
+            return { individualText: `${individualPoints} pts`, teamText: 'Team: ? pts', isBroken: false, isMade: false };
+        }
         
-        const biddingTeamId = bidderPlayer.teamId;
-        const opposingTeamId = biddingTeamId === 'team1' ? 'team2' : 'team1';
+        // Check if we know all team members (should be 2 per team)
+        const teamPlayers = getKnownTeamPlayers(knownTeam);
         
-        // Calculate both teams' points
-        const biddingTeamPoints = players
-            .filter(p => p.teamId === biddingTeamId)
-            .reduce((sum, p) => sum + calculatePoints(p), 0);
+        // If we don't know all team members yet, show unknown
+        if (teamPlayers.length < 2) {
+            return { individualText: `${individualPoints} pts`, teamText: 'Team: ? pts', isBroken: false, isMade: false };
+        }
         
-        const opposingTeamPoints = players
-            .filter(p => p.teamId === opposingTeamId)
-            .reduce((sum, p) => sum + calculatePoints(p), 0);
+        const teamPoints = teamPlayers.reduce((sum, p) => sum + calculatePoints(p), 0);
+        
+        // Find the bidding team (based on what human knows)
+        const bidderKnownTeam = getKnownTeam(players.find(p => p.id === highBidder));
+        if (!bidderKnownTeam) {
+            return { 
+                individualText: `${individualPoints} pts`, 
+                teamText: 'Team: ? pts',
+                isBroken: false,
+                isMade: false
+            };
+        }
+        
+        const biddingTeamNumber = bidderKnownTeam;
+        const opposingTeamNumber = biddingTeamNumber === '1' ? '2' : '1';
+        
+        // Calculate both teams' points based on known members
+        const biddingTeamPlayers = getKnownTeamPlayers(biddingTeamNumber);
+        const opposingTeamPlayers = getKnownTeamPlayers(opposingTeamNumber);
+        
+        // If we don't know all members of both teams, can't calculate bid status accurately
+        if (biddingTeamPlayers.length < 2 || opposingTeamPlayers.length < 2) {
+            return { 
+                individualText: `${individualPoints} pts`, 
+                teamText: `Team: ${teamPoints} pts`,
+                isBroken: false,
+                isMade: false
+            };
+        }
+        
+        const biddingTeamPoints = biddingTeamPlayers.reduce((sum, p) => sum + calculatePoints(p), 0);
+        const opposingTeamPoints = opposingTeamPlayers.reduce((sum, p) => sum + calculatePoints(p), 0);
         
         // Calculate remaining points in play
         const totalPointsInGame = 120;
@@ -146,12 +200,35 @@ export const GameTable = ({
         // even if they win all remaining points
         const isBidBroken = biddingTeamPoints + remainingPoints < currentBid.amount;
         
-        // If player is on bidding team and bid is broken, show negative bid amount
-        if (player.teamId === biddingTeamId && isBidBroken) {
-            return { text: `-${currentBid.amount} pts`, isBroken: true };
+        // Bid is made if bidding team has already reached their bid amount
+        const isBidMade = biddingTeamPoints >= currentBid.amount;
+        
+        // If player is on bidding team
+        if (knownTeam === biddingTeamNumber) {
+            if (isBidBroken) {
+                return { 
+                    individualText: `${individualPoints} pts`,
+                    teamText: `Team: -${currentBid.amount} pts`,
+                    isBroken: true,
+                    isMade: false
+                };
+            }
+            if (isBidMade) {
+                return { 
+                    individualText: `${individualPoints} pts`,
+                    teamText: `Team: ${teamPoints} pts`,
+                    isBroken: false,
+                    isMade: true
+                };
+            }
         }
         
-        return { text: `${points} pts`, isBroken: false };
+        return { 
+            individualText: `${individualPoints} pts`,
+            teamText: `Team: ${teamPoints} pts`,
+            isBroken: false,
+            isMade: false
+        };
     };
 
     return (
@@ -159,7 +236,7 @@ export const GameTable = ({
             {/* Top Player (Across) - Position 2 */}
             {topPlayer && (
                 <div className={styles.topPlayer}>
-                    <div className={styles.playerInfo}>
+                    <div className={`${styles.playerInfo} ${getTeamBorderClass(topPlayer)}`}>
                         <div className={styles.playerName}>
                             {topPlayer.name}
                             {highBidder === topPlayer.id && currentBid && (
@@ -172,8 +249,13 @@ export const GameTable = ({
                         {phase === 'playing' && (() => {
                             const pointsInfo = getPointsInfo(topPlayer);
                             return (
-                                <div className={`${styles.playerPoints} ${pointsInfo.isBroken ? styles.broken : (topPlayer.teamId ? styles[`team${topPlayer.teamId === 'team1' ? '1' : '2'}`] : styles.noTeam)}`}>
-                                    {pointsInfo.text}
+                                <div className={styles.pointsContainer}>
+                                    <div className={`${styles.playerPoints} ${pointsInfo.isBroken ? styles.broken : pointsInfo.isMade ? styles.made : (topPlayer.teamId ? styles[`team${topPlayer.teamId === 'team1' ? '1' : '2'}`] : styles.noTeam)}`}>
+                                        {pointsInfo.teamText}
+                                    </div>
+                                    <div className={`${styles.playerPoints} ${styles.noTeam}`}>
+                                        {pointsInfo.individualText}
+                                    </div>
                                 </div>
                             );
                         })()}
@@ -191,7 +273,7 @@ export const GameTable = ({
             {/* Left Player - Position 1 */}
             {leftPlayer && (
                 <div className={styles.leftPlayer}>
-                    <div className={styles.playerInfo}>
+                    <div className={`${styles.playerInfo} ${getTeamBorderClass(leftPlayer)}`}>
                         <div className={styles.playerName}>
                             {leftPlayer.name}
                             {highBidder === leftPlayer.id && currentBid && (
@@ -204,8 +286,13 @@ export const GameTable = ({
                         {phase === 'playing' && (() => {
                             const pointsInfo = getPointsInfo(leftPlayer);
                             return (
-                                <div className={`${styles.playerPoints} ${pointsInfo.isBroken ? styles.broken : (leftPlayer.teamId ? styles[`team${leftPlayer.teamId === 'team1' ? '1' : '2'}`] : styles.noTeam)}`}>
-                                    {pointsInfo.text}
+                                <div className={styles.pointsContainer}>
+                                    <div className={`${styles.playerPoints} ${pointsInfo.isBroken ? styles.broken : pointsInfo.isMade ? styles.made : (leftPlayer.teamId ? styles[`team${leftPlayer.teamId === 'team1' ? '1' : '2'}`] : styles.noTeam)}`}>
+                                        {pointsInfo.teamText}
+                                    </div>
+                                    <div className={`${styles.playerPoints} ${styles.noTeam}`}>
+                                        {pointsInfo.individualText}
+                                    </div>
                                 </div>
                             );
                         })()}
@@ -223,7 +310,7 @@ export const GameTable = ({
             {/* Right Player - Position 3 */}
             {rightPlayer && (
                 <div className={styles.rightPlayer}>
-                    <div className={styles.playerInfo}>
+                    <div className={`${styles.playerInfo} ${getTeamBorderClass(rightPlayer)}`}>
                         <div className={styles.playerName}>
                             {rightPlayer.name}
                             {highBidder === rightPlayer.id && currentBid && (
@@ -236,8 +323,13 @@ export const GameTable = ({
                         {phase === 'playing' && (() => {
                             const pointsInfo = getPointsInfo(rightPlayer);
                             return (
-                                <div className={`${styles.playerPoints} ${pointsInfo.isBroken ? styles.broken : (rightPlayer.teamId ? styles[`team${rightPlayer.teamId === 'team1' ? '1' : '2'}`] : styles.noTeam)}`}>
-                                    {pointsInfo.text}
+                                <div className={styles.pointsContainer}>
+                                    <div className={`${styles.playerPoints} ${pointsInfo.isBroken ? styles.broken : pointsInfo.isMade ? styles.made : (rightPlayer.teamId ? styles[`team${rightPlayer.teamId === 'team1' ? '1' : '2'}`] : styles.noTeam)}`}>
+                                        {pointsInfo.teamText}
+                                    </div>
+                                    <div className={`${styles.playerPoints} ${styles.noTeam}`}>
+                                        {pointsInfo.individualText}
+                                    </div>
                                 </div>
                             );
                         })()}
@@ -293,7 +385,7 @@ export const GameTable = ({
             {/* Bottom Player (Human) */}
             {humanPlayer && (
                 <div className={styles.bottomPlayer}>
-                    <div className={styles.playerInfo}>
+                    <div className={`${styles.playerInfo} ${getTeamBorderClass(humanPlayer)}`}>
                         <div className={styles.playerName}>
                             {humanPlayer.name} <span className={styles.youBadge}>YOU</span>
                             {highBidder === humanPlayer.id && currentBid && (
@@ -306,8 +398,13 @@ export const GameTable = ({
                         {phase === 'playing' && (() => {
                             const pointsInfo = getPointsInfo(humanPlayer);
                             return (
-                                <div className={`${styles.playerPoints} ${pointsInfo.isBroken ? styles.broken : (humanPlayer.teamId ? styles[`team${humanPlayer.teamId === 'team1' ? '1' : '2'}`] : styles.noTeam)}`}>
-                                    {pointsInfo.text}
+                                <div className={styles.pointsContainer}>
+                                    <div className={`${styles.playerPoints} ${pointsInfo.isBroken ? styles.broken : pointsInfo.isMade ? styles.made : (humanPlayer.teamId ? styles[`team${humanPlayer.teamId === 'team1' ? '1' : '2'}`] : styles.noTeam)}`}>
+                                        {pointsInfo.teamText}
+                                    </div>
+                                    <div className={`${styles.playerPoints} ${styles.noTeam}`}>
+                                        {pointsInfo.individualText}
+                                    </div>
                                 </div>
                             );
                         })()}
