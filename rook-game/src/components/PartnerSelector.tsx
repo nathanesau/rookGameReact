@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import type { Card, CardColor, CardValue } from '../types';
+import { Card as CardComponent } from './Card';
 import styles from './PartnerSelector.module.css';
 
 interface PartnerSelectorProps {
   playerHand: Card[];
   nest: Card[];
   onSelectPartner: (card: Card) => void;
+  onBack?: () => void;
 }
 
 // Generate all possible cards (including Rook, excluding cards in player's hand and nest)
@@ -47,9 +49,20 @@ const generateSelectableCards = (playerHand: Card[], nest: Card[]): Card[] => {
 
 type SelectableColor = CardColor | 'rook';
 
-export const PartnerSelector = ({ playerHand, nest, onSelectPartner }: PartnerSelectorProps) => {
+export const PartnerSelector = ({ playerHand, nest, onSelectPartner, onBack }: PartnerSelectorProps) => {
   const [selectedCard, setSelectedCard] = useState<Card | null>(null);
   const [selectedColor, setSelectedColor] = useState<SelectableColor | null>(null);
+
+  // Sort hand by color and value
+  const sortedHand = [...playerHand].sort((a, b) => {
+    const colorOrder = { red: 0, yellow: 1, green: 2, black: 3, rook: 4 };
+    if (a.color !== b.color) {
+      return colorOrder[a.color] - colorOrder[b.color];
+    }
+    if (a.value === 'rook') return 1;
+    if (b.value === 'rook') return -1;
+    return (a.value as number) - (b.value as number);
+  });
 
   const selectableCards = generateSelectableCards(playerHand, nest);
   const colorGroups: Record<SelectableColor, Card[]> = {
@@ -96,10 +109,39 @@ export const PartnerSelector = ({ playerHand, nest, onSelectPartner }: PartnerSe
   };
 
   return (
-    <div className={styles.partnerSelector} role="dialog" aria-labelledby="partner-selector-title">
-      <div className={styles.header}>
-        <h2 id="partner-selector-title">Call Your Partner</h2>
+    <div className={styles.partnerSelectorContainer}>
+      <div className={styles.handPreview}>
+        <h3 className={styles.handTitle}>Your Hand</h3>
+        <div 
+          className={styles.cards}
+          style={{ '--total-cards': sortedHand.length } as React.CSSProperties}
+        >
+          {sortedHand.map((card, index) => (
+            <div
+              key={card.id}
+              style={{ '--card-index': index } as React.CSSProperties}
+            >
+              <CardComponent card={card} />
+            </div>
+          ))}
+        </div>
       </div>
+
+      <div className={styles.partnerSelector} role="dialog" aria-labelledby="partner-selector-title">
+        <div className={styles.header}>
+          {onBack && (
+            <button
+              className={styles.backButton}
+              onClick={onBack}
+              type="button"
+              aria-label="Go back to trump selection"
+            >
+              ← Back
+            </button>
+          )}
+          <h2 id="partner-selector-title">Call Your Partner</h2>
+          <div className={styles.spacer} />
+        </div>
 
       <div className={styles.instructions} role="note">
         Select a card to call. The player with this card will be your secret partner!
@@ -169,6 +211,7 @@ export const PartnerSelector = ({ playerHand, nest, onSelectPartner }: PartnerSe
           </button>
         </div>
       )}
+      </div>
     </div>
   );
 };

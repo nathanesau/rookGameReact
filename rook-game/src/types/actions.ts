@@ -11,7 +11,9 @@ export type GameAction =
   | { type: 'CALL_REDEAL'; payload: { playerId: PlayerId } }
   | { type: 'CONTINUE_TO_NEST_SELECTION' }
   | { type: 'SELECT_NEST_CARDS'; payload: { cardsToAdd: Card[]; cardsToDiscard: Card[] } }
+  | { type: 'BACK_TO_NEST_SELECTION' }
   | { type: 'SELECT_TRUMP'; payload: { color: CardColor } }
+  | { type: 'BACK_TO_TRUMP_SELECTION' }
   | { type: 'SELECT_PARTNER'; payload: { card: Card } }
   | { type: 'PLAY_CARD'; payload: { playerId: PlayerId; card: Card } }
   | { type: 'CORRECT_RENEGE'; payload: { playerId: PlayerId; card: Card } }

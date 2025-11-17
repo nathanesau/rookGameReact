@@ -1,3 +1,58 @@
+.trumpSelectorContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  padding: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.handPreview {
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+.handTitle {
+  color: #fff;
+  font-size: 1.2rem;
+  margin: 0;
+  text-align: center;
+}
+
+.cards {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 180px;
+  width: 100%;
+  padding: 0 20px;
+  margin-top: -60px;
+}
+
+.cards>* {
+  position: absolute;
+  transition: all 0.3s ease;
+
+  /* Calculate position and rotation for fan effect */
+  --angle-range: 40deg;
+  --card-offset-calc: calc((var(--card-index) - (var(--total-cards) - 1) / 2) / var(--total-cards));
+  --rotation: calc(var(--card-offset-calc) * var(--angle-range));
+  --horizontal-offset: calc(var(--card-index) * 45px - (var(--total-cards) - 1) * 22.5px);
+
+  left: calc(50% + var(--horizontal-offset));
+  transform: translateX(-50%) rotate(var(--rotation));
+  transform-origin: center bottom;
+}
+
+.cards>*:hover {
+  transform: translateX(-50%) rotate(var(--rotation)) translateY(-10px);
+  z-index: 10;
+}
+
 .trumpSelector {
   display: flex;
   flex-direction: column;
@@ -17,17 +72,52 @@
     opacity: 0;
     transform: scale(0.8) rotate(-5deg);
   }
+
   to {
     opacity: 1;
     transform: scale(1) rotate(0deg);
   }
 }
 
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 0.8rem;
+}
+
 .header h2 {
   color: #fff;
   font-size: 1.3rem;
-  margin: 0 0 0.8rem 0;
+  margin: 0;
   text-align: center;
+  flex: 1;
+}
+
+.backButton {
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.backButton:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+.backButton:active {
+  transform: scale(0.98);
+}
+
+.spacer {
+  width: 80px;
 }
 
 .instructions {
@@ -65,16 +155,28 @@
   animation-fill-mode: backwards;
 }
 
-.colorButton:nth-child(1) { animation-delay: 0.1s; }
-.colorButton:nth-child(2) { animation-delay: 0.2s; }
-.colorButton:nth-child(3) { animation-delay: 0.3s; }
-.colorButton:nth-child(4) { animation-delay: 0.4s; }
+.colorButton:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.colorButton:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.colorButton:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+.colorButton:nth-child(4) {
+  animation-delay: 0.4s;
+}
 
 @keyframes colorButtonAppear {
   from {
     opacity: 0;
     transform: scale(0.5) rotate(90deg);
   }
+
   to {
     opacity: 1;
     transform: scale(1) rotate(0deg);
@@ -100,9 +202,12 @@
 }
 
 @keyframes selectedGlow {
-  0%, 100% {
+
+  0%,
+  100% {
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
   }
+
   50% {
     box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
   }
@@ -187,6 +292,28 @@
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
+  .trumpSelectorContainer {
+    padding: 1.5rem;
+    gap: 1.5rem;
+  }
+
+  .handPreview {
+    padding: 1.2rem;
+  }
+
+  .handTitle {
+    font-size: 1.1rem;
+  }
+
+  .cards {
+    height: 150px;
+  }
+
+  .cards>* {
+    --angle-range: 45deg;
+    --horizontal-offset: calc(var(--card-index) * 38px - (var(--total-cards) - 1) * 19px);
+  }
+
   .trumpSelector {
     padding: 1.2rem;
     max-width: 400px;
@@ -226,6 +353,29 @@
 }
 
 @media (max-width: 480px) {
+  .trumpSelectorContainer {
+    padding: 1rem;
+    gap: 1rem;
+  }
+
+  .handPreview {
+    padding: 1rem;
+  }
+
+  .handTitle {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .cards {
+    height: 120px;
+  }
+
+  .cards>* {
+    --angle-range: 50deg;
+    --horizontal-offset: calc(var(--card-index) * 30px - (var(--total-cards) - 1) * 15px);
+  }
+
   .trumpSelector {
     padding: 1rem;
     max-width: 95%;

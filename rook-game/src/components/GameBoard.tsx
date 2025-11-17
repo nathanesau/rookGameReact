@@ -455,39 +455,38 @@ export const GameBoard = () => {
         return <GameTable {...gameTableProps} />;
 
       case 'trumpSelection':
-        // Show game table with trump selector overlay if human player is the high bidder
+        // Show trump selector with hand preview if human player is the high bidder
         if (state.highBidder === humanPlayerId) {
           return (
-            <>
-              <GameTable {...gameTableProps} />
-              <div className={styles.trumpSelectionOverlay}>
-                <TrumpSelector onSelectTrump={handleSelectTrump} />
-              </div>
-            </>
+            <div className={styles.trumpSelectionContainer}>
+              <TrumpSelector
+                hand={humanPlayer?.hand || []}
+                onSelectTrump={handleSelectTrump}
+                onBack={() => dispatch({ type: 'BACK_TO_NEST_SELECTION' })}
+              />
+            </div>
           );
         }
         // Otherwise show game table (computer player is selecting)
         return <GameTable {...gameTableProps} />;
 
       case 'partnerSelection':
-        // Show partner selector overlay if human player is the high bidder
+        // Show partner selector with hand preview if human player is the high bidder
         if (state.highBidder === humanPlayerId) {
           return (
-            <>
-              <GameTable {...gameTableProps} />
-              <div className={styles.partnerSelectionOverlay}>
-                <PartnerSelector
-                  playerHand={humanPlayer?.hand || []}
-                  nest={state.nest}
-                  onSelectPartner={(card) => {
-                    dispatch({
-                      type: 'SELECT_PARTNER',
-                      payload: { card },
-                    });
-                  }}
-                />
-              </div>
-            </>
+            <div className={styles.partnerSelectionContainer}>
+              <PartnerSelector
+                playerHand={humanPlayer?.hand || []}
+                nest={state.nest}
+                onSelectPartner={(card) => {
+                  dispatch({
+                    type: 'SELECT_PARTNER',
+                    payload: { card },
+                  });
+                }}
+                onBack={() => dispatch({ type: 'BACK_TO_TRUMP_SELECTION' })}
+              />
+            </div>
           );
         }
         // Otherwise show game table (computer player is selecting)

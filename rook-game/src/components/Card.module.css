@@ -1,6 +1,6 @@
 .card {
-  width: 80px;
-  height: 120px;
+  width: 70px;
+  height: 105px;
   border-radius: 8px;
   border: 2px solid #333;
   background: white;
@@ -14,8 +14,8 @@
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   user-select: none;
   /* Touch-friendly minimum size */
-  min-width: 60px;
-  min-height: 90px;
+  min-width: 41px;
+  min-height: 62px;
 }
 
 .card:hover:not(.disabled) {
@@ -80,7 +80,7 @@
 }
 
 .rookSymbol {
-  font-size: 36px;
+  font-size: 32px;
   margin-bottom: 4px;
 }
 
@@ -100,7 +100,7 @@
 }
 
 .cardValue {
-  font-size: 32px;
+  font-size: 28px;
   font-weight: bold;
   line-height: 1;
 }

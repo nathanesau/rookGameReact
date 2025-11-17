@@ -237,6 +237,17 @@
   animation: fadeInScale 0.4s ease-out;
 }
 
+/* Partner Selection Container */
+.partnerSelectionContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  padding: 20px;
+  background: radial-gradient(circle at center, #2d5016 0%, #1a3009 100%);
+  animation: fadeInScale 0.4s ease-out;
+}
+
 /* Trump Selection Overlay */
 .trumpSelectionOverlay {
   position: absolute;

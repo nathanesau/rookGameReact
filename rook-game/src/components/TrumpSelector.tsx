@@ -1,9 +1,12 @@
 import { useState } from 'react';
-import type { CardColor } from '../types';
+import type { Card, CardColor } from '../types';
+import { Card as CardComponent } from './Card';
 import styles from './TrumpSelector.module.css';
 
 interface TrumpSelectorProps {
+  hand: Card[];
   onSelectTrump: (color: CardColor) => void;
+  onBack?: () => void;
 }
 
 const COLORS: { color: CardColor; label: string; emoji: string }[] = [
@@ -13,7 +16,7 @@ const COLORS: { color: CardColor; label: string; emoji: string }[] = [
   { color: 'black', label: 'Black', emoji: '⚫' },
 ];
 
-export const TrumpSelector = ({ onSelectTrump }: TrumpSelectorProps) => {
+export const TrumpSelector = ({ hand, onSelectTrump, onBack }: TrumpSelectorProps) => {
   const [selectedColor, setSelectedColor] = useState<CardColor | null>(null);
 
   const handleColorClick = (color: CardColor) => {
@@ -33,10 +36,50 @@ export const TrumpSelector = ({ onSelectTrump }: TrumpSelectorProps) => {
     }
   };
 
+  // Sort hand by color and value
+  const sortedHand = [...hand].sort((a, b) => {
+    const colorOrder = { red: 0, yellow: 1, green: 2, black: 3, rook: 4 };
+    if (a.color !== b.color) {
+      return colorOrder[a.color] - colorOrder[b.color];
+    }
+    if (a.value === 'rook') return 1;
+    if (b.value === 'rook') return -1;
+    return (a.value as number) - (b.value as number);
+  });
+
   return (
-    <div className={styles.trumpSelector} role="dialog" aria-labelledby="trump-selector-title">
+    <div className={styles.trumpSelectorContainer}>
+      <div className={styles.handPreview}>
+        <h3 className={styles.handTitle}>Your Hand</h3>
+        <div 
+          className={styles.cards}
+          style={{ '--total-cards': sortedHand.length } as React.CSSProperties}
+        >
+          {sortedHand.map((card, index) => (
+            <div
+              key={card.id}
+              style={{ '--card-index': index } as React.CSSProperties}
+            >
+              <CardComponent card={card} />
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className={styles.trumpSelector} role="dialog" aria-labelledby="trump-selector-title">
       <div className={styles.header}>
+        {onBack && (
+          <button
+            className={styles.backButton}
+            onClick={onBack}
+            type="button"
+            aria-label="Go back to nest selection"
+          >
+            ← Back
+          </button>
+        )}
         <h2 id="trump-selector-title">Choose Trump Suit</h2>
+        <div className={styles.spacer} />
       </div>
 
       <div className={styles.instructions} role="note">
@@ -72,6 +115,7 @@ export const TrumpSelector = ({ onSelectTrump }: TrumpSelectorProps) => {
       >
         Confirm Trump Selection
       </button>
+      </div>
     </div>
   );
 };

@@ -468,6 +468,19 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
       };
     }
 
+    case 'BACK_TO_NEST_SELECTION': {
+      // Allow going back from trump selection to nest selection
+      if (state.phase !== 'trumpSelection') {
+        console.error('Can only go back from trump selection phase');
+        return state;
+      }
+
+      return {
+        ...state,
+        phase: 'nestSelection',
+      };
+    }
+
     case 'SELECT_TRUMP': {
       const { color } = action.payload;
 
@@ -487,6 +500,19 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         ...state,
         trumpColor: color,
         phase: 'partnerSelection',
+      };
+    }
+
+    case 'BACK_TO_TRUMP_SELECTION': {
+      // Allow going back from partner selection to trump selection
+      if (state.phase !== 'partnerSelection') {
+        console.error('Can only go back from partner selection phase');
+        return state;
+      }
+
+      return {
+        ...state,
+        phase: 'trumpSelection',
       };
     }
 

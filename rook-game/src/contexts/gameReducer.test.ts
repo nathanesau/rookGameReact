@@ -946,6 +946,11 @@ describe('gameReducer - Playing Phase', () => {
         payload: { playerId: 'player-3', card: player3Card },
       });
 
+      // End the round after all tricks are complete
+      state = gameReducer(state, {
+        type: 'END_ROUND',
+      });
+
       // Should transition to roundEnd phase
       expect(state.phase).toBe('roundEnd');
 
