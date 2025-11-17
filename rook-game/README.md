@@ -191,3 +191,50 @@ MIT License - feel free to use this project for learning or personal use.
 Click the **?** button in the bottom-right corner while playing to access the in-game help system with complete rules and instructions.
 
 Enjoy playing Rook! 🎉
+
+
+## 🚀 Deployment
+
+### GitHub Pages
+
+This project is configured for automatic deployment to GitHub Pages.
+
+#### Setup Steps:
+
+1. **Enable GitHub Pages**:
+   - Go to your repository Settings → Pages
+   - Under "Build and deployment", select "GitHub Actions" as the source
+
+2. **Push to main branch**:
+   ```bash
+   git add .
+   git commit -m "Deploy to GitHub Pages"
+   git push origin main
+   ```
+
+3. **Access your game**:
+   - After the workflow completes, your game will be available at:
+   - `https://[your-username].github.io/RookGame/`
+
+#### Manual Deployment:
+
+If you prefer to deploy manually:
+
+```bash
+cd rook-game
+npm run build
+# The dist folder contains your production build
+# Upload the contents to your hosting provider
+```
+
+### Configuration
+
+The `vite.config.ts` is configured with `base: '/RookGame/'` for GitHub Pages. If deploying elsewhere, update this value:
+
+```typescript
+export default defineConfig({
+  base: '/', // For root domain deployment
+  // or
+  base: '/your-repo-name/', // For GitHub Pages
+})
+```
