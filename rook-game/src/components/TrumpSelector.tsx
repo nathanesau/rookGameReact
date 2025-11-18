@@ -7,6 +7,7 @@ interface TrumpSelectorProps {
   hand: Card[];
   onSelectTrump: (color: CardColor) => void;
   onBack?: () => void;
+  initialTrumpColor?: CardColor | null;
 }
 
 const COLORS: { color: CardColor; label: string; emoji: string }[] = [
@@ -16,8 +17,8 @@ const COLORS: { color: CardColor; label: string; emoji: string }[] = [
   { color: 'black', label: 'Black', emoji: '⚫' },
 ];
 
-export const TrumpSelector = ({ hand, onSelectTrump, onBack }: TrumpSelectorProps) => {
-  const [selectedColor, setSelectedColor] = useState<CardColor | null>(null);
+export const TrumpSelector = ({ hand, onSelectTrump, onBack, initialTrumpColor = null }: TrumpSelectorProps) => {
+  const [selectedColor, setSelectedColor] = useState<CardColor | null>(initialTrumpColor);
 
   const handleColorClick = (color: CardColor) => {
     setSelectedColor(color);
@@ -79,7 +80,6 @@ export const TrumpSelector = ({ hand, onSelectTrump, onBack }: TrumpSelectorProp
           </button>
         )}
         <h2 id="trump-selector-title">Choose Trump Suit</h2>
-        <div className={styles.spacer} />
       </div>
 
       <div className={styles.instructions} role="note">

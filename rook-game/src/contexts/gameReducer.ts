@@ -10,6 +10,7 @@ export const createInitialState = (): GameState => {
     players: [],
     deck: [],
     nest: [],
+    originalNest: [],
     dealerId: '',
     currentPlayerId: '',
     winningScore: 500,
@@ -131,6 +132,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         players: resetPlayers,
         deck,
         nest: [],
+        originalNest: [],
         dealerId: newDealerId,
         currentPlayerId: firstBidderId,
         currentBid: null,
@@ -376,6 +378,7 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         ...state,
         phase: 'nestSelection',
         players: updatedPlayers,
+        originalNest: [...state.nest], // Store original nest for back navigation
       };
     }
 
@@ -475,8 +478,29 @@ export const gameReducer = (state: GameState, action: GameAction): GameState => 
         return state;
       }
 
+      // Need to restore the high bidder's hand to include all nest cards again
+      // The nest currently has the discarded cards, and the player's hand has the selected nest cards
+      // We need to restore: original 13-card hand + original 5 nest cards
+      
+      const highBidderPlayer = state.players.find(p => p.id === state.highBidder);
+      if (!highBidderPlayer) {
+        return { ...state, phase: 'nestSelection' };
+      }
+
+      // Combine current hand (13 cards) + current nest (5 cards) = all 18 cards
+      const allCards = [...highBidderPlayer.hand, ...state.nest];
+      
+      const updatedPlayers = state.players.map(player =>
+        player.id === state.highBidder
+          ? { ...player, hand: allCards }
+          : player
+      );
+
+      // Restore the original nest (before any selection was made)
       return {
         ...state,
+        players: updatedPlayers,
+        nest: [...state.originalNest],
         phase: 'nestSelection',
       };
     }

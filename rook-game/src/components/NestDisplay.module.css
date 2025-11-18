@@ -84,6 +84,19 @@
   animation: fadeIn 0.3s ease-out;
 }
 
+/* Mobile: tighter fan and smaller cards to fit on screen */
+@media (max-width: 480px) {
+  .handDisplay {
+    height: 100px;
+    padding: 0 10px;
+  }
+
+  .handDisplay > * {
+    --angle-range: 25deg;
+    --horizontal-offset: calc(var(--card-index) * 30px - (var(--total-cards) - 1) * 15px);
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
@@ -287,12 +300,27 @@
   margin: 0.5rem 0;
 }
 
+/* Mobile: reduce section spacing */
+@media (max-width: 480px) {
+  .section {
+    margin: 0.1rem 0;
+  }
+}
+
 .sectionTitle {
   color: #fff;
   font-size: 1rem;
-  margin: 0 0 0.5rem 0;
+  margin: 0 0 1rem 0;
   text-align: center;
   font-weight: 600;
+}
+
+/* Mobile: reduce gap between section titles and cards */
+@media (max-width: 480px) {
+  .sectionTitle {
+    margin: 0 0 0.5rem 0;
+    font-size: 0.85rem;
+  }
 }
 
 .nestCards {
@@ -300,10 +328,24 @@
   gap: 12px;
   justify-content: center;
   flex-wrap: wrap;
-  padding: 1rem;
+  padding: 1.5rem 1rem;
   background: rgba(0, 0, 0, 0.2);
   border-radius: 8px;
   margin-bottom: 1rem;
+  min-height: 120px;
+  align-items: center;
+}
+
+/* Mobile: ensure nest cards fit on one row */
+@media (max-width: 480px) {
+  .nestCards {
+    gap: 6px;
+    padding: 0.8rem 0.3rem;
+    margin-bottom: 0.3rem;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    min-height: 90px;
+  }
 }
 
 /* Button group */

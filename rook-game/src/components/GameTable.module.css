@@ -32,7 +32,7 @@
 
 .leftPlayer {
   position: absolute;
-  left: 1%;
+  left: 0;
   top: 43%;
   transform: translateY(-50%);
   display: flex;
@@ -43,7 +43,7 @@
 
 .rightPlayer {
   position: absolute;
-  right: 0%;
+  right: 0;
   top: 43%;
   transform: translateY(-50%);
   display: flex;
@@ -364,9 +364,9 @@
 
 .nestHeader {
   display: flex;
-  flex-direction: row;
-  align-items: center;
-  gap: 8px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
 }
 
 .nestLabel {
@@ -402,8 +402,7 @@
 }
 
 .nestCards {
-  display: flex;
-  gap: -15px;
+  display: none; /* Hide nest cards to save space */
 }
 
 .nestCard {
@@ -439,64 +438,89 @@
   }
 
   .playerInfo {
-    padding: 6px 12px;
-    min-width: 90px;
+    padding: 4px 8px;
+    min-width: 70px;
+    border-width: 2px;
   }
 
   .playerName {
-    font-size: 12px;
+    font-size: 11px;
+    margin-bottom: 2px;
   }
 
   .playerTeam {
-    font-size: 10px;
+    font-size: 9px;
+  }
+
+  .playerPoints {
+    font-size: 11px;
+    padding: 2px 6px;
   }
 
   .youBadge {
-    font-size: 9px;
-    padding: 2px 5px;
+    font-size: 8px;
+    padding: 1px 4px;
+    margin-left: 4px;
   }
 
   .bidBadge {
-    font-size: 9px;
-    padding: 2px 5px;
+    font-size: 8px;
+    padding: 1px 4px;
+    margin-left: 4px;
+  }
+
+  .topPlayer {
+    top: 12%;
   }
 
   .leftPlayer {
-    left: 5px;
+    left: 0;
     top: 50%;
+    gap: 5px;
+    transform: translateX(-20px) translateY(-50%);
   }
 
   .rightPlayer {
-    right: 5px;
+    right: 0;
     top: 50%;
+    gap: 5px;
+    transform: translateX(20px) translateY(-50%);
   }
 
   .bottomPlayer {
     width: 95%;
+    bottom: 3%;
   }
 
-  .opponentCard {
-    margin-left: -12px;
-  }
-
-  .opponentCardVertical {
-    margin-top: -38px;
+  /* Hide opponent hands on mobile */
+  .opponentHand,
+  .opponentHandVertical {
+    display: none;
   }
 
   .nest {
-    padding: 15px;
+    padding: 8px 12px;
+  }
+
+  .nestHeader {
+    flex-direction: column;
+    gap: 4px;
+    align-items: flex-start;
   }
 
   .nestLabel {
-    font-size: 12px;
+    font-size: 11px;
   }
 
+  .nestPoints,
+  .nestNoPoints {
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+
+  /* Hide nest cards on mobile */
   .nestCards {
-    gap: -12px;
-  }
-
-  .nestCard {
-    margin-left: -12px;
+    display: none;
   }
 }
 
@@ -507,59 +531,96 @@
   }
 
   .cardBackCount {
-    font-size: 10px;
-    padding: 2px 6px;
+    font-size: 9px;
+    padding: 2px 5px;
   }
 
   .playerInfo {
-    padding: 5px 10px;
-    min-width: 80px;
+    padding: 3px 6px;
+    min-width: 60px;
+    border-width: 2px;
   }
 
   .playerName {
-    font-size: 11px;
+    font-size: 10px;
+    margin-bottom: 1px;
   }
 
   .playerTeam {
-    font-size: 9px;
+    font-size: 8px;
+  }
+
+  .playerPoints {
+    font-size: 10px;
+    padding: 2px 5px;
+  }
+
+  .pointsContainer {
+    gap: 4px;
+    margin-top: 2px;
+  }
+
+  /* Hide opponent hands on mobile */
+  .opponentHand,
+  .opponentHandVertical {
+    display: none;
   }
 
   .youBadge {
-    font-size: 8px;
-    padding: 1px 4px;
+    font-size: 7px;
+    padding: 1px 3px;
+    margin-left: 3px;
   }
 
   .bidBadge {
-    font-size: 8px;
-    padding: 1px 4px;
+    font-size: 7px;
+    padding: 1px 3px;
+    margin-left: 3px;
+  }
+
+  .topPlayer {
+    top: 14%;
   }
 
   .leftPlayer {
-    left: 2px;
+    left: 0;
+    gap: 3px;
+    transform: translateX(-25px) translateY(-50%);
   }
 
   .rightPlayer {
-    right: 2px;
+    right: 0;
+    gap: 3px;
+    transform: translateX(25px) translateY(-50%);
   }
 
   .bottomPlayer {
-    bottom: 5%;
-  }
-
-  .opponentCard {
-    margin-left: -10px;
-  }
-
-  .opponentCardVertical {
-    margin-top: -32px;
+    bottom: 2%;
   }
 
   .nest {
-    padding: 10px;
+    padding: 6px 10px;
+  }
+
+  .nestHeader {
+    flex-direction: column;
+    gap: 3px;
+    align-items: flex-start;
   }
 
   .nestLabel {
-    font-size: 11px;
+    font-size: 10px;
+  }
+
+  .nestPoints,
+  .nestNoPoints {
+    font-size: 9px;
+    padding: 2px 6px;
+  }
+
+  /* Hide nest cards on mobile */
+  .nestCards {
+    display: none;
   }
 }
 

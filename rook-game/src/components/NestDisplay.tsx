@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card } from './Card';
 import type { Card as CardType } from '../types';
 import styles from './NestDisplay.module.css';
@@ -7,11 +7,35 @@ interface NestDisplayProps {
   hand: CardType[];
   nest: CardType[];
   onComplete: (cardsToAdd: CardType[], cardsToDiscard: CardType[]) => void;
+  initialSelectedNest?: string[];
+  initialSelectedDiscard?: string[];
 }
 
-export const NestDisplay = ({ hand, nest, onComplete }: NestDisplayProps) => {
-  const [selectedNestCards, setSelectedNestCards] = useState<Set<string>>(new Set());
-  const [selectedDiscardCards, setSelectedDiscardCards] = useState<Set<string>>(new Set());
+export const NestDisplay = ({ 
+  hand, 
+  nest, 
+  onComplete,
+  initialSelectedNest = [],
+  initialSelectedDiscard = []
+}: NestDisplayProps) => {
+  const [selectedNestCards, setSelectedNestCards] = useState<Set<string>>(
+    new Set(initialSelectedNest)
+  );
+  const [selectedDiscardCards, setSelectedDiscardCards] = useState<Set<string>>(
+    new Set(initialSelectedDiscard)
+  );
+
+  // Update state when initial selections change (e.g., when going back from trump selection)
+  // Use JSON.stringify for stable comparison since arrays are recreated on each render
+  const initialNestKey = JSON.stringify(initialSelectedNest);
+  const initialDiscardKey = JSON.stringify(initialSelectedDiscard);
+  
+  useEffect(() => {
+    console.log('NestDisplay: Updating selections', { initialSelectedNest, initialSelectedDiscard });
+    setSelectedNestCards(new Set(initialSelectedNest));
+    setSelectedDiscardCards(new Set(initialSelectedDiscard));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialNestKey, initialDiscardKey]);
 
   // Get the original 13-card hand (without nest cards)
   const originalHand = useMemo(() => {

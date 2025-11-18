@@ -140,11 +140,10 @@ export const PartnerSelector = ({ playerHand, nest, onSelectPartner, onBack }: P
             </button>
           )}
           <h2 id="partner-selector-title">Call Your Partner</h2>
-          <div className={styles.spacer} />
         </div>
 
       <div className={styles.instructions} role="note">
-        Select a card to call. The player with this card will be your secret partner!
+        Select a secret partner card.
       </div>
 
       {!selectedColor ? (
@@ -170,7 +169,7 @@ export const PartnerSelector = ({ playerHand, nest, onSelectPartner, onBack }: P
         <div className={styles.cardSelection}>
           <div className={styles.stepHeader}>
             <button
-              className={styles.backButton}
+              className={styles.stepBackButton}
               onClick={() => {
                 setSelectedColor(null);
                 setSelectedCard(null);

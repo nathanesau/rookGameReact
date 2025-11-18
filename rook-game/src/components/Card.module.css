@@ -18,6 +18,70 @@
   min-height: 62px;
 }
 
+/* Corner numbers - shown on all screen sizes */
+.cornerTopLeft,
+.cornerBottomRight {
+  position: absolute;
+  display: block;
+  font-weight: bold;
+  line-height: 1;
+  font-size: 10px;
+}
+
+.cornerTopLeft {
+  top: 2px;
+  left: 2px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+}
+
+.cornerBottomRight {
+  bottom: 2px;
+  right: 2px;
+  transform: rotate(180deg);
+}
+
+.cornerValue {
+  /* Wrapper for card value */
+}
+
+.cornerPointsBadge {
+  font-size: 6px;
+  font-weight: bold;
+  background: #f39c12;
+  color: white;
+  border-radius: 50%;
+  width: 12px;
+  height: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+
+/* Corner colors inherit from card color */
+.card-red .cornerTopLeft,
+.card-red .cornerBottomRight {
+  color: #e74c3c;
+}
+
+.card-yellow .cornerTopLeft,
+.card-yellow .cornerBottomRight {
+  color: #f39c12;
+}
+
+.card-green .cornerTopLeft,
+.card-green .cornerBottomRight {
+  color: #27ae60;
+}
+
+.card-black .cornerTopLeft,
+.card-black .cornerBottomRight {
+  color: #2c3e50;
+}
+
 .card:hover:not(.disabled) {
   transform: translateY(-8px) scale(1.02);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
@@ -33,6 +97,23 @@
   outline: 3px solid #4a90e2;
   outline-offset: 3px;
   box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+}
+
+/* Card content styling */
+.cardValue {
+  font-size: 28px;
+  font-weight: bold;
+  padding: 2px 5px;
+  border: 1px solid currentColor;
+  border-radius: 3px;
+}
+
+.cardColor {
+  display: none; /* Hide suit letter on all screen sizes */
+}
+
+.pointsBadge {
+  display: none; /* Hide top-right points badge on all screen sizes */
 }
 
 /* Color-specific styling */
@@ -265,29 +346,46 @@
 
 @media (max-width: 480px) {
   .card {
-    width: 50px;
-    height: 75px;
+    width: 24px;
+    height: 36px;
   }
 
+  /* Show corner numbers on mobile */
+  .cornerTopLeft,
+  .cornerBottomRight {
+    display: block;
+    font-size: 8px;
+  }
+
+  /* Add border around center number on mobile, hide suit letter */
   .cardValue {
-    font-size: 20px;
+    font-size: 16px;
+    padding: 2px 4px;
+    border: 1px solid currentColor;
+    border-radius: 3px;
   }
 
   .cardColor {
-    font-size: 9px;
+    display: none;
   }
 
   .rookSymbol {
-    font-size: 24px;
+    font-size: 13px;
   }
 
   .rookText {
-    font-size: 10px;
+    font-size: 6px;
   }
 
+  /* Hide the top-right points badge on mobile */
   .pointsBadge {
-    font-size: 8px;
-    padding: 1px 4px;
+    display: none;
+  }
+
+  .cornerPointsBadge {
+    font-size: 5px;
+    width: 10px;
+    height: 10px;
   }
 
   /* Minimal hover effect on mobile */

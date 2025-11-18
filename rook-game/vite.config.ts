@@ -5,6 +5,10 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   plugins: [react()],
   base: '/rookGameReact/',
+  server: {
+    host: true, // Listen on all addresses including LAN
+    port: 5173,
+  },
   css: {
     modules: {
       localsConvention: 'camelCase',

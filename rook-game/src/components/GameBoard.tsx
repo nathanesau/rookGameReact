@@ -21,6 +21,18 @@ export const GameBoard = () => {
   const [announcementQueue, setAnnouncementQueue] = useState<string[]>([]);
   const [shownAnnouncements, setShownAnnouncements] = useState<Set<string>>(new Set());
   const [confirmPlay, setConfirmPlay] = useState<{ card: Card; reason: string } | null>(null);
+  const [nestSelection, setNestSelection] = useState<{ 
+    selectedNest: string[]; 
+    selectedDiscard: string[];
+  } | null>(null);
+  
+  // Clear nest selection only when moving to playing phase
+  // Keep it during partner selection so we can go back through trump to nest
+  useEffect(() => {
+    if (state.phase === 'playing') {
+      setNestSelection(null);
+    }
+  }, [state.phase]);
 
   // Assume player-0 is the human player
   const humanPlayerId = 'player-0';
@@ -362,6 +374,12 @@ export const GameBoard = () => {
 
   // Handle nest selection
   const handleDiscard = (cardsToAdd: Card[], cardsToDiscard: Card[]) => {
+    // Store the selection for potential back navigation
+    setNestSelection({
+      selectedNest: cardsToAdd.map(c => c.id),
+      selectedDiscard: cardsToDiscard.map(c => c.id),
+    });
+    
     dispatch({
       type: 'SELECT_NEST_CARDS',
       payload: { cardsToAdd, cardsToDiscard },
@@ -441,12 +459,24 @@ export const GameBoard = () => {
       case 'nestSelection':
         // Only show nest selection UI if human player is the high bidder
         if (state.highBidder === humanPlayerId) {
+          console.log('GameBoard: Rendering NestDisplay with selections', nestSelection);
+          // The reducer handles restoring the original nest when going back
+          const currentHand = humanPlayer?.hand || [];
+          
+          // Separate the 18 cards back into original hand (13) and nest (5)
+          // The nest in state is the original nest (restored by reducer on back navigation)
+          const nestCardIds = new Set(state.nest.map(c => c.id));
+          const displayNest = currentHand.filter(c => nestCardIds.has(c.id));
+          const displayHand = currentHand.filter(c => !nestCardIds.has(c.id));
+          
           return (
             <div className={styles.nestSelectionContainer}>
               <NestDisplay
-                hand={humanPlayer?.hand || []}
-                nest={state.nest}
+                hand={displayHand}
+                nest={displayNest}
                 onComplete={handleDiscard}
+                initialSelectedNest={nestSelection?.selectedNest}
+                initialSelectedDiscard={nestSelection?.selectedDiscard}
               />
             </div>
           );
@@ -463,6 +493,7 @@ export const GameBoard = () => {
                 hand={humanPlayer?.hand || []}
                 onSelectTrump={handleSelectTrump}
                 onBack={() => dispatch({ type: 'BACK_TO_NEST_SELECTION' })}
+                initialTrumpColor={state.trumpColor}
               />
             </div>
           );
@@ -578,7 +609,7 @@ export const GameBoard = () => {
         <div className={styles.gameTitle}>
           {state.currentRound > 0 ? `Round ${state.currentRound}` : 'Rook Card Game'}
         </div>
-        {state.phase !== 'nestSelection' && state.phase !== 'trumpSelection' && <GameInfo />}
+        {state.phase !== 'nestSelection' && state.phase !== 'trumpSelection' && state.phase !== 'partnerSelection' && <GameInfo />}
       </div>
 
       {/* Main game content */}

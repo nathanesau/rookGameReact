@@ -51,6 +51,17 @@ export const Card = ({ card, onClick, isSelected = false, isDisabled = false }: 
       aria-disabled={isDisabled}
       aria-pressed={isSelected}
     >
+      {!isRookBird && (
+        <>
+          <div className={styles.cornerTopLeft}>
+            <div className={styles.cornerValue}>{card.value}{card.color.charAt(0).toUpperCase()}</div>
+            {card.points > 0 && <div className={styles.cornerPointsBadge}>{card.points}</div>}
+          </div>
+          <div className={styles.cornerBottomRight}>
+            {card.value}{card.color.charAt(0).toUpperCase()}
+          </div>
+        </>
+      )}
       <div className={styles.cardContent}>
         {isRookBird ? (
           <>

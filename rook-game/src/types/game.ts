@@ -35,6 +35,7 @@ export interface GameState {
   players: Player[];
   deck: Card[];
   nest: Card[];
+  originalNest: Card[]; // Original nest cards before any selection (for back navigation)
   dealerId: PlayerId;
   currentPlayerId: PlayerId;
 

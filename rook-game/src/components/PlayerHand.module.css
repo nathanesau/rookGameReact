@@ -130,17 +130,17 @@
 
 @media (max-width: 480px) {
   .playerHand {
-    padding: 8px;
-    min-height: 110px;
+    padding: 5px;
+    min-height: 55px;
   }
 
   .cardFan {
-    height: 100px;
+    height: 50px;
   }
 
   .cardWrapper {
-    --angle-range: 60deg;
-    --horizontal-offset: calc(var(--card-index) * 26px - (var(--total-cards) - 1) * 13px);
+    --angle-range: 16deg;
+    --horizontal-offset: calc(var(--card-index) * 30px - (var(--total-cards) - 1) * 15px);
   }
 
   .cardWrapper:hover {
