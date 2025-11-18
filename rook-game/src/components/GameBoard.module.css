@@ -589,8 +589,13 @@
 }
 
 @media (max-width: 480px) {
+  .topBar {
+    padding-left: 70px;
+  }
+
   .gameTitle {
     font-size: 1.1rem;
+    margin-left: 0;
   }
 
   .gameInfo {

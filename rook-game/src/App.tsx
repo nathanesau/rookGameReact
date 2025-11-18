@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { GameBoard, GameSetup, GameEnd, HelpModal, LoadingSpinner } from './components';
 import { SettingsModal } from './components/SettingsModal';
+import { FullscreenButton } from './components/FullscreenButton';
 import { useGame } from './contexts';
 import './App.css';
 
@@ -139,6 +140,7 @@ function App() {
   // During gameplay, HelpButton component in GameTable handles the help button
   return (
     <>
+      <FullscreenButton />
       <GameBoard />
     </>
   );
